@@ -382,7 +382,7 @@
           <DockPanel>
             <StackPanel DockPanel.Dock="Top">
               <TextBlock Text="Inspect change with evidence" FontSize="21" FontWeight="SemiBold" />
-              <TextBlock Text="Capture reads object names, present values and units for the selected device. Compare includes address, property, array index, raw bytes and errors." TextWrapping="Wrap" Foreground="{StaticResource Muted}" Margin="0,6,0,12" />
+              <TextBlock Text="Capture reads names, present values, units, all sixteen priority slots and relinquish defaults. Compare identifies changed slots, including NULL releases. Unreadable priorities remain errors; older baselines show Not captured." TextWrapping="Wrap" Foreground="{StaticResource Muted}" Margin="0,6,0,12" />
               <WrapPanel>
                 <Button Content="Capture baseline" Click="CaptureBaseline" />
                 <Button Content="Compare live" Click="CompareLive" />

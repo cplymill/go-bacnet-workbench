@@ -70,7 +70,7 @@ public sealed partial class WorkbenchWindow : Window
     internal WorkbenchWindow(EngineClient? injectedEngine, bool initialize)
     {
         engine = injectedEngine;
-        Title = "Go BACnet Workbench 0.2.20 · Cross-platform preview";
+        Title = "Go BACnet Workbench 0.2.21 · Cross-platform preview";
         Width = 1530; Height = 920; MinWidth = 1120; MinHeight = 760;
         FontSize = 13; Foreground = Brush.Parse("#20334D");
         FontFamily = new FontFamily("avares://Avalonia.Fonts.Inter/Assets#Inter");

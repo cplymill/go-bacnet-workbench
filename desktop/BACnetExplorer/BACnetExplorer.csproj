@@ -8,7 +8,7 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <AssemblyName>GoBACnetWorkbench</AssemblyName>
     <RootNamespace>BACnetExplorer</RootNamespace>
-    <Version>0.2.20</Version>
+    <Version>0.2.21</Version>
     <Product>Go BACnet Workbench</Product>
     <Description>BACnet network troubleshooting and commissioning with Go BACnet Stack</Description>
     <ApplicationManifest>app.manifest</ApplicationManifest>

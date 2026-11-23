@@ -1005,23 +1005,24 @@ public partial class MainWindow : Window
 
     private async Task<List<PropertyRow>> Capture()
     {
-        var result = await LoadInventory(CurrentPeer);
-        if (result.TryGetProperty("enrichmentError", out var error)) throw new IOException("Snapshot incomplete: " + error.GetString());
-        return Rows(result.GetProperty("enrichment"));
+        var selected = CurrentPeer;
+        var result = await LoadInventory(selected);
+        return await Snapshot.Capture(Engine, selected.Key, result, () => cancelRequested);
     }
-    private async void CaptureBaseline(object sender, RoutedEventArgs e) => await Run("Capture baseline", async () => { baseline = await Capture(); dirty = true; SnapshotSummary.Text = $"Baseline: {baseline.Count} property observations · {DateTime.Now:g}"; });
+    private async void CaptureBaseline(object sender, RoutedEventArgs e) => await Run("Capture baseline", async () =>
+    {
+        baseline = await Capture();
+        dirty = true;
+        SnapshotSummary.Text = $"Baseline: {baseline.Count} observations · {baseline.Count(row => row.Error.Length > 0)} read errors (including unsupported properties) · {DateTime.Now:g}";
+    });
     private async void CompareLive(object sender, RoutedEventArgs e) => await Run("Compare live", async () =>
     {
         if (baseline.Count == 0) throw new InvalidOperationException("Capture or load a baseline first.");
         var live = await Capture();
-        var old = baseline.ToDictionary(r => r.Identity); var current = live.ToDictionary(r => r.Identity);
-        differences = old.Keys.Union(current.Keys).Select(key =>
-        {
-            old.TryGetValue(key, out var before); current.TryGetValue(key, out var after);
-            var row = after ?? before!;
-            return new Difference(row.Object, row.Selector, before?.Result ?? "", after?.Result ?? "", before == null ? "Added" : after == null ? "Removed" : before.Raw != after.Raw || before.Error != after.Error ? "Changed" : "Unchanged");
-        }).Where(d => d.Change != "Unchanged").ToList();
-        DifferenceGrid.ItemsSource = differences; SnapshotSummary.Text = $"{differences.Count} differences · {live.Count} live observations";
+        differences = Snapshot.Compare(baseline, live);
+        DifferenceGrid.ItemsSource = differences;
+        SnapshotSummary.Text = $"{differences.Count} differences · {live.Count} live observations" +
+            (Snapshot.HasPriorities(baseline) ? "" : " · Older baseline: priority observations were not captured.");
     });
 
     private async void ReadEvents(object sender, RoutedEventArgs e) => await Run("Read events", async () =>
@@ -1096,7 +1097,7 @@ public partial class MainWindow : Window
         var dialog = new OpenFileDialog { Filter = "BACnet workspace|*.bacnet.json|JSON|*.json" };
         if (dialog.ShowDialog(this) != true) return;
         var workspace = JsonSerializer.Deserialize<Workspace>(ReadBounded(dialog.FileName), EngineClient.Json) ?? throw new InvalidDataException("Invalid workspace.");
-        if (workspace.Version != 1 || workspace.Watches == null || workspace.Connection == null || workspace.Baseline == null || workspace.Watches.Count > 64 || workspace.Baseline.Count > 30000) throw new InvalidDataException("Workspace version or limits are invalid.");
+        if (workspace.Version != 1 || workspace.Watches == null || workspace.Connection == null || workspace.Baseline == null || workspace.Watches.Count > 64 || workspace.Baseline.Count > Snapshot.MaximumObservations) throw new InvalidDataException("Workspace version or limits are invalid.");
         if (workspace.Watches.Select(w => w.Identity).Distinct().Count() != workspace.Watches.Count || workspace.Baseline.Select(r => r.Identity).Distinct().Count() != workspace.Baseline.Count) throw new InvalidDataException("Workspace contains duplicate selectors.");
         var normalized = Decode<List<PropertyRow>>(await Engine.Call("normalize", new { selections = workspace.Watches.Select(w => new { @object = w.Object, property = w.Property, index = w.Index }).ToArray() }));
         for (var i = 0; i < workspace.Watches.Count; i++) { workspace.Watches[i].Object = normalized[i].Object; workspace.Watches[i].Property = normalized[i].Property; workspace.Watches[i].Index = normalized[i].Index; }
@@ -1109,7 +1110,7 @@ public partial class MainWindow : Window
     {
         var dialog = new OpenFileDialog { Filter = "JSON|*.json" }; if (dialog.ShowDialog(this) != true) return Task.CompletedTask;
         var rows = JsonSerializer.Deserialize<List<PropertyRow>>(ReadBounded(dialog.FileName), EngineClient.Json) ?? throw new InvalidDataException("Invalid baseline.");
-        if (rows.Count > 30000 || rows.Select(r => r.Identity).Distinct().Count() != rows.Count) throw new InvalidDataException("Baseline exceeds limits or contains duplicate selectors.");
+        Snapshot.Validate(rows);
         baseline = rows; dirty = true; SnapshotSummary.Text = $"Loaded {baseline.Count} observations"; return Task.CompletedTask;
     });
     private static string CsvCell(object? value)

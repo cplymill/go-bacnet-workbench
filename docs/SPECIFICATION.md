@@ -1,6 +1,6 @@
 # Go BACnet Workbench — product specification
 
-**Version covered:** 0.2.20
+**Version covered:** 0.2.21
 
 **Reviewed:** November 23, 2026
 
@@ -9,7 +9,7 @@
 **Additional distribution:** untested macOS desktop preview, Apple Silicon and Intel
 
 This specification describes implemented application behavior in the published
-0.2.20 source and release packages. It separates available controls from tested
+0.2.21 source and release packages. It separates available controls from tested
 platform behavior. A remote device must support and authorize a requested service
 for that operation to succeed. This document is not a BTL certification, PICS,
 claim of universal device compatibility, or specification of every capability in
@@ -59,9 +59,9 @@ router and BBMD information does not turn the application into those devices.
 
 | Distribution | Package | Status |
 | --- | --- | --- |
-| Windows x64 | `GoBACnetWorkbench-0.2.20-x64.msi` | Primary release; automated desktop/engine checks and installer payload verification passed |
-| macOS Apple Silicon | `GoBACnetWorkbench-0.2.20-osx-arm64-UNTESTED.zip` | Complete desktop app bundle; not run on Mac hardware |
-| macOS Intel | `GoBACnetWorkbench-0.2.20-osx-x64-UNTESTED.zip` | Complete desktop app bundle; not run on Mac hardware |
+| Windows x64 | `GoBACnetWorkbench-0.2.21-x64.msi` | Primary release; automated desktop/engine checks and installer payload verification passed |
+| macOS Apple Silicon | `GoBACnetWorkbench-0.2.21-osx-arm64-UNTESTED.zip` | Complete desktop app bundle; not run on Mac hardware |
+| macOS Intel | `GoBACnetWorkbench-0.2.21-osx-x64-UNTESTED.zip` | Complete desktop app bundle; not run on Mac hardware |
 
 The Windows installer includes the .NET runtime and compiled engine, installs
 per user under the user's local Programs directory, adds a Start Menu shortcut,
@@ -75,9 +75,9 @@ license notices and preview instructions in an `.app` distribution. The bundle
 declares macOS 14 as its minimum version; this is a packaging target, not a tested
 compatibility result. The Mac packages are unsigned and not notarized. macOS may
 block opening them. No Windows ARM, Linux package, Mac installer, automatic
-updater or Mac hardware qualification is claimed for 0.2.20.
+updater or Mac hardware qualification is claimed for 0.2.21.
 
-The published [release](https://github.com/cplymill/go-bacnet-workbench/releases/tag/v0.2.20)
+The published [release](https://github.com/cplymill/go-bacnet-workbench/releases/tag/v0.2.21)
 includes SHA-256 checksums for the three application downloads.
 
 ## 3. Connections and transports
@@ -280,9 +280,13 @@ database or background recording service after the application exits.
 
 ## 9. Snapshots, workspaces and exports
 
-A baseline captures inventory enrichment observations: object names, present
-values and units. Comparison reads a fresh inventory and classifies observations
-as added, removed, changed or unchanged. This is an observation comparison, not
+A baseline captures object names, present values, units, all sixteen priority
+slots and relinquish defaults. Comparison reports changed individual priority
+slots, including NULL releases, and default changes even if the effective value
+is unchanged. It also identifies added/removed observations and read-error
+changes. Older baselines remain readable; priority observations missing from them
+are labeled Not captured rather than invented as historical values. See the
+[priority baseline guide](PRIORITY_BASELINES.md). This is an observation comparison, not
 a complete controller backup or a restore operation.
 
 Windows provides baseline load/save, a differences table and differences CSV
@@ -445,7 +449,7 @@ Smaller peer/APDU/transport limits and errors can stop an operation earlier.
 | Received APDU metadata rows | 1,000 |
 | Activity rows | Windows 1,000; Mac preview 2,000 |
 | Workspace/baseline input files | 16 MiB |
-| Workspace baseline observations | 30,000 |
+| Workspace baseline observations | 50,000 |
 | File transfer data / device export data | 16 MiB application guard |
 | File records per individual engine service call | At most 64; desktop loops normally use smaller requests |
 | Active-event traversal | At most 64 advancing pages; per-page decoder bound 1,024 summaries |
@@ -527,15 +531,16 @@ many operations require a live discovered device binding and confirmation.
 
 ## 17. Validation and boundaries
 
-The [0.2.20 release evidence](releases/0.2.20.json) records passing adapter
-tests/vet, Windows desktop checks, production-engine IPC checks and Windows MSI
-payload verification. Focused fixture checks cover search replacement/cancel,
+The [0.2.21 release evidence](releases/0.2.21.json) records new Windows/shared
+snapshot checks, production-engine IPC checks and Windows MSI payload verification.
+Adapter tests/vet evidence is reused from the unchanged 0.2.20 engine.
+Focused fixture checks cover search replacement/cancel,
 bounded cleanup, draft preservation, write/readback behavior, progressive
 inventory, polling/COV coordination and IPC resource behavior. Public GitHub CI
 also builds and runs the Windows desktop and cross-platform headless checks.
 
 The published Windows screenshot shows the actual installed 0.2.19 interface
-reading a real device, not a generated mockup. The 0.2.20 Windows UI retains that
+reading a real device, not a generated mockup. The 0.2.21 Windows UI retains that
 interface. Its image is evidence of that observation, not proof of every
 transport or changing service on physical equipment.
 
@@ -557,6 +562,7 @@ guarantee that a device returned all requested information.
   [foreground/monitoring/workspace owner](../desktop/BACnetExplorer/MainWindow.xaml.cs),
   [priority tools](../desktop/BACnetExplorer/MainWindow.Priority.cs),
   [management/file tools](../desktop/BACnetExplorer/MainWindow.Tools.cs).
+- [Shared snapshot capture and comparison](../desktop/BACnetExplorer/Snapshot.cs).
 - [Shared IPC client](../desktop/BACnetExplorer/EngineClient.cs),
   [edit policy](../desktop/BACnetExplorer/PropertyEditPolicy.cs),
   [value editors](../desktop/BACnetExplorer/PropertyValueEditor.cs).

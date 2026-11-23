@@ -160,7 +160,7 @@ public sealed partial class WorkbenchWindow
         var data = JsonSerializer.Deserialize<Workspace>(ReadBounded(path), EngineClient.Json)
             ?? throw new InvalidDataException("Invalid workspace.");
         if (data.Version != 1 || data.Watches == null || data.Baseline == null || data.Connection == null ||
-            data.Watches.Count > 64 || data.Baseline.Count > 30000 ||
+            data.Watches.Count > 64 || data.Baseline.Count > Snapshot.MaximumObservations ||
             data.Watches.Select(watch => watch.Identity).Distinct().Count() != data.Watches.Count ||
             data.Baseline.Select(row => row.Identity).Distinct().Count() != data.Baseline.Count)
             throw new InvalidDataException("Workspace version, selectors or limits are invalid.");
@@ -176,24 +176,20 @@ public sealed partial class WorkbenchWindow
     }
     private async Task CaptureBaseline()
     {
-        var result = await Engine.Call("inventory", new { device = CurrentPeer.Key });
-        if (result.TryGetProperty("enrichmentError", out var error)) throw new IOException("Snapshot incomplete: " + error.GetString());
-        baseline.Clear(); baseline.AddRange(Rows(result.GetProperty("enrichment")));
-        status.Text = $"Captured {baseline.Count} observations.";
+        var selected = CurrentPeer;
+        var result = await Engine.Call("inventory", new { device = selected.Key });
+        var captured = await Snapshot.Capture(Engine, selected.Key, result, () => canceling || closing);
+        baseline.Clear(); baseline.AddRange(captured);
+        status.Text = $"Captured {baseline.Count} observations including priorities/defaults; {baseline.Count(row => row.Error.Length > 0)} read errors (including unsupported properties).";
     }
     private async Task CompareBaseline()
     {
         if (baseline.Count == 0) throw new InvalidOperationException("Capture or load a baseline first.");
-        var result = await Engine.Call("inventory", new { device = CurrentPeer.Key });
-        if (result.TryGetProperty("enrichmentError", out var error)) throw new IOException("Comparison incomplete: " + error.GetString());
-        var before = baseline.ToDictionary(row => row.Identity);
-        var after = Rows(result.GetProperty("enrichment")).ToDictionary(row => row.Identity);
-        output.Text = Pretty(before.Keys.Union(after.Keys).Select(key => {
-            before.TryGetValue(key, out var old); after.TryGetValue(key, out var current);
-            var row = current ?? old!;
-            return new Difference(row.Object, row.Selector, old?.Result ?? "", current?.Result ?? "",
-                old == null ? "Added" : current == null ? "Removed" : old.Raw != current.Raw || old.Error != current.Error ? "Changed" : "Unchanged");
-        }));
-        status.Text = "Comparison ready in Tools & diagnostics.";
+        var selected = CurrentPeer;
+        var result = await Engine.Call("inventory", new { device = selected.Key });
+        var live = await Snapshot.Capture(Engine, selected.Key, result, () => canceling || closing);
+        output.Text = Pretty(Snapshot.Compare(baseline, live));
+        status.Text = "Comparison ready in Tools & diagnostics." +
+            (Snapshot.HasPriorities(baseline) ? "" : " Older baseline: priority observations were not captured.");
     }
 }

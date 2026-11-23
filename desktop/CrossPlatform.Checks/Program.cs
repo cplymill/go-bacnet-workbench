@@ -8,9 +8,14 @@ using Avalonia.Threading;
 using BACnetExplorer;
 using BACnetExplorer.CrossPlatform;
 
+if (Environment.GetEnvironmentVariable("WORKBENCH_SNAPSHOT_FIXTURE") == "1") {
+    SnapshotChecks.Serve(); return;
+}
+
 if (Environment.GetEnvironmentVariable("WORKBENCH_CROSS_FIXTURE") == "1") {
     Fixture.Serve(); return;
 }
+await SnapshotChecks.Run();
 AppBuilder.Configure<WorkbenchApp>().UseSkia().UseHeadless(new AvaloniaHeadlessPlatformOptions {
     UseHeadlessDrawing = false
 }).SetupWithoutStarting();

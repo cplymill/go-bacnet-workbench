@@ -1,6 +1,12 @@
 using System.IO;
 using BACnetExplorer;
 
+if (Environment.GetEnvironmentVariable("WORKBENCH_SNAPSHOT_FIXTURE") == "1")
+{
+    SnapshotChecks.Serve();
+    return;
+}
+
 if (Environment.GetEnvironmentVariable("BACNET_WORKBENCH_ENGINE_FIXTURE") == "1")
 {
     EngineClientChecks.Serve();
@@ -26,6 +32,7 @@ if (Environment.GetEnvironmentVariable("BACNET_WORKBENCH_MONITOR_FIXTURE") == "1
 if (!args.Contains("--production-engine-only"))
 {
     EngineClientChecks.Run().GetAwaiter().GetResult();
+    SnapshotChecks.Run().GetAwaiter().GetResult();
     PropertyEditChecks.Run();
     MonitorChecks.Run();
 }

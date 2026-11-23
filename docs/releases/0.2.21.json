@@ -1,0 +1,63 @@
+{
+  "version": "0.2.21",
+  "date": "2026-11-23",
+  "change": "Priority arrays and relinquish defaults in saved snapshot comparisons",
+  "artifacts": [
+    {
+      "name": "GoBACnetWorkbench-0.2.21-x64.msi",
+      "bytes": 62734336,
+      "sha256": "82c45ebafd977ae39576a336c677ecf2320bf755fb4d095c0a1fe891035b6faa"
+    },
+    {
+      "name": "GoBACnetWorkbench-0.2.21-osx-arm64-UNTESTED.zip",
+      "bytes": 50475973,
+      "sha256": "94d9579a6a2b07e0b90954e3b3184f5f5aae2fdb49967ba3308220532572f225"
+    },
+    {
+      "name": "GoBACnetWorkbench-0.2.21-osx-x64-UNTESTED.zip",
+      "bytes": 53000569,
+      "sha256": "9178d3cdc5bf702478bd6bbb12e4bfdcbd96072fc2bdbfec6317e1c374b2ea54"
+    }
+  ],
+  "engine": {
+    "version": "0.2.20",
+    "reusedUnchanged": true,
+    "sha256": "f4326b7692d6a505c802298e9f3d9d09129044fa63b73bdbbf68388c638cedaf",
+    "implementationSourceIncluded": false,
+    "adapterTestsAndVet": "Reused from unchanged 0.2.20 engine",
+    "productionEngineIPCChecks": "PASS"
+  },
+  "windows": {
+    "installerPayloadVerified": true,
+    "installerInstalledByAgent": false,
+    "automatedDesktopChecks": "PASS",
+    "snapshotChecks": [
+      "priority 8/16 changes",
+      "NULL releases",
+      "relinquish-default changes",
+      "baseline/workspace JSON roundtrip",
+      "legacy baseline coverage",
+      "read failures",
+      "malformed/missing priority arrays",
+      "cancellation retains baseline",
+      "device-binding guard",
+      "multi-batch capture"
+    ]
+  },
+  "macOS": {
+    "targets": [
+      "osx-arm64",
+      "osx-x64"
+    ],
+    "selfContainedDesktopBundlesBuilt": true,
+    "headlessChecksOnWindows": "PASS",
+    "runtimeTestedOnMac": false,
+    "signed": false,
+    "notarized": false
+  },
+  "source": {
+    "applicationLicense": "Apache-2.0",
+    "engineLicense": "ENGINE-LICENSE.txt",
+    "stackImplementationSourceIncluded": false
+  }
+}

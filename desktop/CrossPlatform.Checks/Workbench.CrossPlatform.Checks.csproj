@@ -6,6 +6,7 @@
     <AssemblyName>Workbench.CrossPlatform.Checks</AssemblyName>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="../checks/SnapshotChecks.cs" Link="SnapshotChecks.cs" />
     <ProjectReference Include="../CrossPlatform/Workbench.CrossPlatform.csproj" />
     <PackageReference Include="Avalonia.Headless" Version="12.1.2" />
   </ItemGroup>

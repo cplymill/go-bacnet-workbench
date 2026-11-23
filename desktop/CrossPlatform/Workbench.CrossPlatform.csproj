@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <AssemblyName>GoBACnetWorkbench</AssemblyName>
-    <Version>0.2.20</Version>
+    <Version>0.2.21</Version>
     <AvaloniaVersion>12.1.2</AvaloniaVersion>
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
   </PropertyGroup>
@@ -23,6 +23,7 @@
     <Compile Include="../BACnetExplorer/PropertyReadOnlyRules.cs" Link="Shared/PropertyReadOnlyRules.cs" />
     <Compile Include="../BACnetExplorer/PropertyValueEditor.cs" Link="Shared/PropertyValueEditor.cs" />
     <Compile Include="../BACnetExplorer/ScheduleDocument.cs" Link="Shared/ScheduleDocument.cs" />
+    <Compile Include="../BACnetExplorer/Snapshot.cs" Link="Shared/Snapshot.cs" />
     <Compile Include="../BACnetExplorer/CalendarModels.cs" Link="Shared/CalendarModels.cs" />
     <AvaloniaResource Include="../branding/go-bacnet-workbench-logo-v3.png" Link="Assets/Logo.png" />
   </ItemGroup>
