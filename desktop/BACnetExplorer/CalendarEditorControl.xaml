@@ -1,0 +1,27 @@
+<UserControl x:Class="BACnetExplorer.CalendarEditorControl" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:BACnetExplorer" Background="White">
+  <Grid Margin="8">
+    <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+    <DockPanel Margin="0,0,0,10">
+      <StackPanel DockPanel.Dock="Right" Orientation="Horizontal"><Button Content="Cancel operation" Click="CancelOperation" /><Button x:Name="RefreshButton" Content="Refresh" Click="RefreshCalendar" /><Button x:Name="SaveButton" Content="Save changes…" Click="SaveCalendar" /></StackPanel>
+      <StackPanel><TextBlock x:Name="CalendarTitle" FontSize="21" FontWeight="SemiBold" /><TextBlock x:Name="CalendarTarget" Foreground="#65788F" /><TextBlock Text="Edit locally, then Save changes to write to the device." Foreground="#65788F" /><TextBlock x:Name="CalendarSummary" Foreground="#117D85" /></StackPanel>
+    </DockPanel>
+    <Grid Grid.Row="1" x:Name="EditingArea">
+      <Grid.ColumnDefinitions><ColumnDefinition Width="290" /><ColumnDefinition Width="12" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+      <StackPanel>
+        <Calendar x:Name="DatePicker" SelectionMode="MultipleRange" HorizontalAlignment="Stretch" />
+        <TextBlock Text="Select dates in the calendar, then add individual dates or one inclusive range." TextWrapping="Wrap" Foreground="#65788F" Margin="0,8,0,8" />
+        <Button Content="Add selected dates" Click="AddSelectedDates" Margin="0,0,0,7" />
+        <Button Content="Add selected range" Click="AddSelectedRange" Margin="0,0,0,7" />
+        <Button Content="Add recurring rule" Click="AddRecurringRule" Margin="0,0,0,7" />
+      </StackPanel>
+      <DockPanel Grid.Column="2">
+        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,7"><Button Content="Remove selected" DockPanel.Dock="Right" Click="RemoveRules" /><TextBlock Text="Calendar date list" FontWeight="SemiBold" /></DockPanel>
+        <Border DockPanel.Dock="Bottom" Background="#F1F5FA" CornerRadius="5" Padding="10" Margin="0,9,0,0"><local:CalendarRuleEditor x:Name="RuleEditor" /></Border>
+        <DataGrid x:Name="RuleGrid" SelectionMode="Extended" SelectionChanged="SelectRule" ClipboardCopyMode="IncludeHeader"><DataGrid.Columns>
+          <DataGridTextColumn Header="Rule" Binding="{Binding Kind}" Width="75" /><DataGridTextColumn Header="Dates / recurrence" Binding="{Binding Summary}" Width="*" />
+        </DataGrid.Columns></DataGrid>
+      </DockPanel>
+    </Grid>
+    <TextBlock Grid.Row="2" x:Name="CalendarStatus" Text="Reading calendar…" TextWrapping="Wrap" Foreground="#65788F" Margin="0,9,0,0" />
+  </Grid>
+</UserControl>

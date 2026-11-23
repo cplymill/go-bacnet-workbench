@@ -1,0 +1,73 @@
+<UserControl x:Class="BACnetExplorer.ScheduleEditorControl" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:BACnetExplorer" Background="#F1F5FA" Foreground="#20334D" FontFamily="Segoe UI" FontSize="13">
+  <Grid Margin="8">
+    <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="*" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+    <DockPanel Margin="0,0,0,12">
+      <StackPanel Orientation="Horizontal" DockPanel.Dock="Right"><Button Content="Cancel operation" Click="CancelOperation" /><Button x:Name="RefreshButton" Content="Refresh" Click="RefreshSchedule" /><Button x:Name="SaveButton" Content="Save changes…" Click="SaveSchedule" /></StackPanel>
+      <StackPanel><TextBlock x:Name="ScheduleTitle" FontSize="21" FontWeight="SemiBold" /><TextBlock x:Name="ScheduleTarget" Foreground="#65788F" /><TextBlock Text="Edit locally, then Save changes to write to the device." Foreground="#65788F" /></StackPanel>
+    </DockPanel>
+    <DockPanel Grid.Row="1" Margin="0,0,0,8">
+      <Button DockPanel.Dock="Right" Content="Show full day / working hours" Click="ToggleHours" />
+      <CheckBox x:Name="OccupancyLabels" DockPanel.Dock="Right" Content="Occupancy labels (0 / 1)" Click="ToggleLabels" />
+      <WrapPanel DockPanel.Dock="Bottom" Margin="0,7,0,0">
+        <TextBlock Text="Default value" Margin="0,0,10,0" />
+        <TextBox x:Name="DefaultValueBox" Width="160" />
+        <TextBlock Text="Used before the first transition and wherever a transition returns to Default." Foreground="#65788F" />
+      </WrapPanel>
+      <TextBlock x:Name="DefaultSummary" Text="Reading schedule…" Foreground="#65788F" />
+    </DockPanel>
+    <TabControl x:Name="ScheduleTabs" Grid.Row="2" SelectionChanged="EditorTabChanged">
+      <TabItem Header="Week view"><local:ScheduleWeekView x:Name="WeekView" MinHeight="180" /></TabItem>
+      <TabItem Header="Exact transitions">
+        <DockPanel>
+          <ComboBox x:Name="TransitionDay" DockPanel.Dock="Top" Width="180" HorizontalAlignment="Left" SelectionChanged="ChangeTransitionDay" />
+          <DataGrid x:Name="Transitions" IsReadOnly="False" CanUserAddRows="False" BeginningEdit="BeginTransitionEdit" CellEditEnding="TransitionEdited"><DataGrid.Columns>
+            <DataGridTextColumn Header="Time" Binding="{Binding Time}" Width="150" /><DataGridTextColumn Header="Type" Binding="{Binding Type}" IsReadOnly="True" Width="170" /><DataGridTextColumn Header="Value" Binding="{Binding Value}" Width="*" />
+          </DataGrid.Columns></DataGrid>
+        </DockPanel>
+      </TabItem>
+      <TabItem x:Name="ExceptionsTab" Header="Exceptions">
+        <Grid>
+          <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="140" /><RowDefinition Height="Auto" /><RowDefinition Height="*" /></Grid.RowDefinitions>
+          <WrapPanel Margin="0,0,0,7"><Button Content="Add exception" Click="AddException" /><Button Content="Remove selected" Click="RemoveException" /><TextBlock Text="Calendar date/range/recurrence or a Calendar object reference · priority 1–16" Foreground="#65788F" /></WrapPanel>
+          <DataGrid Grid.Row="1" x:Name="ExceptionGrid" SelectionChanged="SelectException"><DataGrid.Columns>
+            <DataGridTextColumn Header="Rule" Binding="{Binding Rule.Kind}" Width="75" /><DataGridTextColumn Header="Dates / recurrence" Binding="{Binding Rule.Summary}" Width="*" /><DataGridTextColumn Header="Calendar reference" Binding="{Binding CalendarReference}" Width="140" /><DataGridTextColumn Header="Priority" Binding="{Binding Priority}" Width="70" />
+          </DataGrid.Columns></DataGrid>
+          <StackPanel Grid.Row="2" Margin="0,7,0,7">
+            <WrapPanel x:Name="ExceptionMetadata">
+              <StackPanel><TextBlock Text="Calendar object (optional, 6:instance)" /><TextBox x:Name="ExceptionReference" Text="{Binding CalendarReference, UpdateSourceTrigger=PropertyChanged}" Width="240" TextChanged="ExceptionFieldEdited" /></StackPanel>
+              <StackPanel><TextBlock Text="Exception priority" /><ComboBox x:Name="ExceptionPriority" Width="120" SelectedItem="{Binding Priority, Mode=TwoWay}" SelectionChanged="ExceptionFieldEdited" /></StackPanel>
+            </WrapPanel>
+            <local:CalendarRuleEditor x:Name="ExceptionRule" />
+            <WrapPanel><Button Content="Add time/value" Click="AddExceptionTime" /><Button Content="Remove selected time" Click="RemoveExceptionTime" /></WrapPanel>
+          </StackPanel>
+          <DataGrid Grid.Row="3" x:Name="ExceptionTimes" IsReadOnly="False" CanUserAddRows="False" SelectionMode="Extended" BeginningEdit="BeginTransitionEdit" CellEditEnding="TransitionEdited"><DataGrid.Columns>
+            <DataGridTextColumn Header="Time" Binding="{Binding Time}" Width="150" /><DataGridTextColumn Header="Type" Binding="{Binding Type}" IsReadOnly="True" Width="170" /><DataGridTextColumn Header="Value" Binding="{Binding Value}" Width="*" />
+          </DataGrid.Columns></DataGrid>
+        </Grid>
+      </TabItem>
+      <TabItem x:Name="PeriodTab" Header="Effective period">
+        <StackPanel Margin="8">
+          <TextBlock Text="The weekly program and exceptions are active within this inclusive date range." Foreground="#65788F" Margin="0,0,0,15" />
+          <WrapPanel><StackPanel><TextBlock Text="Active from" /><DatePicker x:Name="PeriodStartPicker" Width="180" SelectedDateChanged="PeriodEdited" /><CheckBox x:Name="NoPeriodStart" Content="No start bound" Checked="PeriodEdited" Unchecked="PeriodEdited" /></StackPanel>
+          <StackPanel Margin="20,0,0,0"><TextBlock Text="Active through" /><DatePicker x:Name="PeriodEndPicker" Width="180" SelectedDateChanged="PeriodEdited" /><CheckBox x:Name="NoPeriodEnd" Content="No end bound" Checked="PeriodEdited" Unchecked="PeriodEdited" /></StackPanel></WrapPanel>
+          <TextBlock Text="Changes are saved with the weekly program, default and exceptions using Save changes." TextWrapping="Wrap" Foreground="#65788F" Margin="0,15,0,0" />
+        </StackPanel>
+      </TabItem>
+    </TabControl>
+    <Border x:Name="BlockControls" Grid.Row="3" Background="White" CornerRadius="6" Padding="10" Margin="0,10,0,0">
+      <StackPanel>
+        <TextBlock Text="Click a block to edit it. Drag to move; drag its bottom edge to resize. Drag empty space to add a block." Foreground="#65788F" TextWrapping="Wrap" Margin="0,0,0,6" />
+        <WrapPanel>
+          <ComboBox x:Name="BlockDay" Width="125" />
+          <StackPanel><TextBlock Text="Start" /><TextBox x:Name="BlockStart" Text="08:00" Width="95" /></StackPanel>
+          <StackPanel><TextBlock Text="End" /><TextBox x:Name="BlockEnd" Text="17:00" Width="95" /></StackPanel>
+          <StackPanel><TextBlock Text="Value" /><TextBox x:Name="BlockValue" Text="true" Width="120" /></StackPanel>
+          <Button Content="Apply block" Click="ApplyBlock" VerticalAlignment="Bottom" Margin="0,0,8,4" />
+          <Button Content="Remove block" Click="RemoveBlock" VerticalAlignment="Bottom" Margin="0,0,8,4" />
+          <Button Content="Copy to weekdays" Click="CopyWeekdays" VerticalAlignment="Bottom" Margin="0,0,8,4" />
+        </WrapPanel>
+      </StackPanel>
+    </Border>
+    <TextBlock Grid.Row="4" x:Name="EditorStatus" Text="Weekly program · local edits are sent only with Save changes." Margin="0,9,0,0" TextWrapping="Wrap" Foreground="#65788F" />
+  </Grid>
+</UserControl>

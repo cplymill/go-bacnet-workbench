@@ -1,0 +1,11 @@
+**/bin/
+**/obj/
+.tools/
+.vs/
+*.user
+*.pdb
+*.msi
+*.zip
+*.pem
+*.key
+*.pfx

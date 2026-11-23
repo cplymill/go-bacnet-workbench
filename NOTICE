@@ -1,0 +1,13 @@
+Go BACnet Workbench
+Copyright (c) 2026 Clayton Plymill
+
+Workbench application source in this repository is licensed under the Apache
+License, Version 2.0. See LICENSE.txt.
+
+The Go BACnet Stack implementation is not part of this public repository.
+The separately supplied compiled engine remains proprietary and is distributed
+under ENGINE-LICENSE.txt (also included as STACK-LICENSE.txt in installers).
+The Apache license for the app does not relicense the engine or stack.
+
+Go BACnet Workbench branding and product names are not licensed as trademarks.
+Third-party dependencies retain their own licenses and notices.

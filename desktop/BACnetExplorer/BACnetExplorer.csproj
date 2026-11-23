@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <AssemblyName>GoBACnetWorkbench</AssemblyName>
+    <RootNamespace>BACnetExplorer</RootNamespace>
+    <Version>0.2.20</Version>
+    <Product>Go BACnet Workbench</Product>
+    <Description>BACnet network troubleshooting and commissioning with Go BACnet Stack</Description>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>app.ico</ApplicationIcon>
+  </PropertyGroup>
+  <ItemGroup>
+    <Resource Include="../branding/go-bacnet-workbench-logo-v3.png" Link="Assets/Logo.png" />
+  </ItemGroup>
+</Project>

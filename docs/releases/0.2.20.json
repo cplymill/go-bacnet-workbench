@@ -1,0 +1,51 @@
+{
+  "version": "0.2.20",
+  "date": "2026-11-23",
+  "primaryPlatform": "Windows x64",
+  "artifacts": [
+    {
+      "name": "GoBACnetWorkbench-0.2.20-x64.msi",
+      "bytes": 62730240,
+      "sha256": "4632e5b75727db0c896e13680fc0c1e155587053f2e2e2f8744233cfcbbe0ee5"
+    },
+    {
+      "name": "GoBACnetWorkbench-0.2.20-osx-arm64-UNTESTED.zip",
+      "bytes": 50472894,
+      "sha256": "947ed10205a529005c82491916a300920b369474cceffa58318eb0baebf85062"
+    },
+    {
+      "name": "GoBACnetWorkbench-0.2.20-osx-x64-UNTESTED.zip",
+      "bytes": 52997495,
+      "sha256": "beb7e4f60192802c39a68630fb7d5d77044e0c4eb9869deaa2ccf14a342f9866"
+    }
+  ],
+  "windows": {
+    "installerPayloadVerified": true,
+    "installerInstalledByAgent": false,
+    "automatedDesktopChecks": "PASS",
+    "adapterTestsAndVet": "PASS",
+    "productionEngineIPCChecks": "PASS",
+    "screenshot": {
+      "platform": "Windows",
+      "version": "0.2.19",
+      "actualDeviceSession": true
+    }
+  },
+  "macOS": {
+    "targets": [
+      "osx-arm64",
+      "osx-x64"
+    ],
+    "selfContainedDesktopBundlesBuilt": true,
+    "headlessChecksOnWindows": "PASS",
+    "runtimeTestedOnMac": false,
+    "signed": false,
+    "notarized": false
+  },
+  "source": {
+    "applicationLicense": "Apache-2.0",
+    "engineLicense": "ENGINE-LICENSE.txt",
+    "stackImplementationSourceIncluded": false,
+    "privateGitHistoryIncluded": false
+  }
+}

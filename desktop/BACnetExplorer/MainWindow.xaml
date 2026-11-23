@@ -1,0 +1,540 @@
+<Window x:Class="BACnetExplorer.MainWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:BACnetExplorer" Title="Go BACnet Workbench" Background="#F1F5FA" Foreground="#20334D" FontFamily="Segoe UI" FontSize="13" Width="1530" Height="850" WindowState="Maximized" MinWidth="1120" MinHeight="760" Closing="WindowClosing">
+  <Grid Margin="10">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+    <DockPanel Margin="0,0,0,12">
+      <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+        <Button Content="Open workspace" Click="OpenWorkspace" />
+        <Button Content="Save workspace" Click="SaveWorkspace" />
+        <Border Background="#20354B" CornerRadius="12" Padding="13,6">
+          <TextBlock x:Name="ConnectionBadge" Text="●  OFFLINE" Foreground="#A8BBD2" />
+        </Border>
+      </StackPanel>
+      <Image Source="Assets/Logo.png" MaxWidth="220" Height="92" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality" SnapsToDevicePixels="True" HorizontalAlignment="Left" VerticalAlignment="Center" AutomationProperties.Name="Go BACnet Workbench" />
+    </DockPanel>
+    <Border Grid.Row="1" Background="{StaticResource Panel}" CornerRadius="7" Padding="13" Margin="0,0,0,15">
+      <StackPanel>
+        <DockPanel>
+          <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+            <Button x:Name="ConnectButton" Content="Connect" Background="#117D85" Foreground="White" BorderBrush="#117D85" Click="Connect" />
+            <Button x:Name="DisconnectButton" Content="Disconnect" Click="Disconnect" IsEnabled="False" />
+            <Button Content="Cancel operation" Click="CancelOperation" />
+          </StackPanel>
+          <StackPanel Orientation="Horizontal">
+            <TextBlock Text="CONNECTION" FontWeight="SemiBold" Margin="0,0,17,0" />
+            <ComboBox x:Name="Transport" Width="135" SelectedIndex="0">
+              <ComboBoxItem Content="BACnet / IPv4" />
+              <ComboBoxItem Content="BACnet / MS/TP" />
+              <ComboBoxItem Content="BACnet / IPv6" />
+              <ComboBoxItem Content="BACnet / SC" />
+            </ComboBox>
+            <TextBlock Text="Choose an interface, then connect. No automatic network join." Foreground="{StaticResource Muted}" />
+          </StackPanel>
+        </DockPanel>
+        <Expander x:Name="ConnectionSettings" Header="Connection settings" Foreground="{StaticResource Ink}" Margin="0,8,0,0" IsExpanded="True">
+          <StackPanel x:Name="ConnectionFields" Margin="0,8,0,0">
+            <WrapPanel>
+              <StackPanel>
+                <TextBlock Text="IPv4 bind" />
+                <ComboBox x:Name="Bind" IsEditable="True" Text="127.0.0.1:0" Width="195" />
+              </StackPanel>
+              <StackPanel>
+                <TextBlock Text="Directed broadcast" />
+                <TextBox x:Name="Broadcast" Text="255.255.255.255:47808" Width="200" />
+              </StackPanel>
+              <StackPanel>
+                <TextBlock Text="Serial adapter" />
+                <ComboBox x:Name="SerialPort" IsEditable="True" Width="125" />
+              </StackPanel>
+              <StackPanel>
+                <TextBlock Text="Baud" />
+                <ComboBox x:Name="Baud" IsEditable="True" Text="38400" Width="100">
+                  <ComboBoxItem Content="9600" />
+                  <ComboBoxItem Content="19200" />
+                  <ComboBoxItem Content="38400" />
+                  <ComboBoxItem Content="57600" />
+                  <ComboBoxItem Content="76800" />
+                  <ComboBoxItem Content="115200" />
+                </ComboBox>
+              </StackPanel>
+              <StackPanel>
+                <TextBlock Text="Local MAC" />
+                <TextBox x:Name="Mac" Text="18" Width="75" />
+              </StackPanel>
+              <StackPanel>
+                <TextBlock Text="Max master" />
+                <TextBox x:Name="MaxMaster" Text="127" Width="85" />
+              </StackPanel>
+              <StackPanel>
+                <TextBlock Text="Network" />
+                <TextBox x:Name="Network" Text="0" Width="85" />
+              </StackPanel>
+              <StackPanel>
+                <TextBlock Text="Timeout ms" />
+                <TextBox x:Name="Timeout" Text="3000" Width="90" />
+              </StackPanel>
+              <StackPanel>
+                <TextBlock Text="Retries" />
+                <TextBox x:Name="Retries" Text="1" Width="65" />
+              </StackPanel>
+            </WrapPanel>
+            <Expander x:Name="AdvancedConnection" Header="Foreign device registration" Foreground="{StaticResource Ink}">
+              <StackPanel Margin="0,8,0,0">
+                <WrapPanel>
+                  <StackPanel>
+                    <TextBlock Text="IPv4 BBMD (optional)" />
+                    <TextBox x:Name="Bbmd" Width="210" />
+                  </StackPanel>
+                  <StackPanel>
+                    <TextBlock Text="Foreign TTL (s)" />
+                    <TextBox x:Name="ForeignTtl" Text="120" Width="100" />
+                  </StackPanel>
+                  <StackPanel>
+                    <TextBlock Text="IPv6 bind [address%zone]:port" />
+                    <TextBox x:Name="Ipv6Bind" Text="[::1]:47808" Width="260" />
+                  </StackPanel>
+                  <StackPanel>
+                    <TextBlock Text="IPv6 interface index" />
+                    <TextBox x:Name="Ipv6Interface" Text="1" Width="130" />
+                  </StackPanel>
+                  <StackPanel>
+                    <TextBlock Text="VMAC hex (IPv6: 6 / SC: 12)" />
+                    <TextBox x:Name="Vmac" Width="205" />
+                  </StackPanel>
+                </WrapPanel>
+                <WrapPanel>
+                  <StackPanel>
+                    <TextBlock Text="SC primary hub wss://" />
+                    <TextBox x:Name="Hub" Width="290" />
+                  </StackPanel>
+                  <StackPanel>
+                    <TextBlock Text="SC failover hub (optional)" />
+                    <TextBox x:Name="FailoverHub" Width="290" />
+                  </StackPanel>
+                  <StackPanel>
+                    <TextBlock Text="SC UUID (32 hex digits)" />
+                    <TextBox x:Name="ScUuid" Width="300" />
+                  </StackPanel>
+                </WrapPanel>
+                <WrapPanel>
+                  <StackPanel>
+                    <TextBlock Text="Operational certificate PEM" />
+                    <TextBox x:Name="Certificate" Width="270" />
+                  </StackPanel>
+                  <StackPanel>
+                    <TextBlock Text="Private key PEM path" />
+                    <TextBox x:Name="PrivateKey" Width="270" />
+                  </StackPanel>
+                  <StackPanel>
+                    <TextBlock Text="Trusted site CA PEM" />
+                    <TextBox x:Name="SiteCa" Width="270" />
+                  </StackPanel>
+                  <CheckBox x:Name="VerifyServerName" Content="Also verify hub hostname" />
+                </WrapPanel>
+                <TextBlock x:Name="TransportHelp" TextWrapping="Wrap" Foreground="{StaticResource Muted}" />
+              </StackPanel>
+            </Expander>
+          </StackPanel>
+        </Expander>
+      </StackPanel>
+    </Border>
+    <Grid Grid.Row="2">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="450" MinWidth="260" />
+        <ColumnDefinition Width="12" />
+        <ColumnDefinition Width="*" MinWidth="600" />
+      </Grid.ColumnDefinitions>
+      <Border Background="White" TextElement.Foreground="#20334D" CornerRadius="9" Padding="8">
+        <Border.Resources>
+          <SolidColorBrush x:Key="Muted" Color="#65788F" />
+        </Border.Resources>
+        <DockPanel>
+          <StackPanel DockPanel.Dock="Top">
+            <DockPanel Margin="0,0,0,10">
+              <TextBlock x:Name="DeviceCount" Text="0" DockPanel.Dock="Right" HorizontalAlignment="Right" Foreground="#087F82" />
+              <TextBlock x:Name="NavigationTitle" Foreground="#20334D" Text="Devices" FontWeight="SemiBold" TextWrapping="Wrap" />
+            </DockPanel>
+            <Button x:Name="BackButton" Content="← All devices" Click="BackToDevices" Visibility="Collapsed" Margin="0,0,0,6" />
+            <TextBlock x:Name="NavigationSummary" Text="Discover to browse devices." TextWrapping="Wrap" Foreground="#65788F" Margin="0,0,0,6" />
+            <TextBlock x:Name="NavigationSearchLabel" Text="Search devices" Foreground="#65788F" FontSize="12" />
+            <TextBox x:Name="DeviceFilter" TextChanged="FilterDevices" ToolTip="Filter by device, address, route or vendor" AutomationProperties.Name="Filter devices" />
+            <TextBox x:Name="ObjectFilter" TextChanged="FilterObjects" ToolTip="Search points by name, type, identifier or present value" AutomationProperties.Name="Search device objects" Visibility="Collapsed" />
+            <WrapPanel x:Name="FocusedActions" Visibility="Collapsed" Margin="0,4,0,7">
+              <ComboBox x:Name="ObjectTypeFilter" Width="130" SelectedIndex="0" SelectionChanged="FilterObjectType"><ComboBoxItem Content="All object types" Tag="" /><ComboBoxItem Content="Analog points" Tag="analog" /><ComboBoxItem Content="Binary points" Tag="binary" /><ComboBoxItem Content="Schedules" Tag="schedule" /><ComboBoxItem Content="Calendars" Tag="calendar" /><ComboBoxItem Content="Files" Tag="file" /><ComboBoxItem Content="Logs" Tag="log" /></ComboBox>
+              <Button Content="Refresh" Click="RefreshInventory" Padding="8,5" /><Button Content="All properties" Click="ViewObjectProperties" Padding="8,5" /><Button x:Name="VisualEditorButton" Content="Schedule view" Click="ViewObjectEditor" Padding="8,5" Visibility="Collapsed" />
+            </WrapPanel>
+            <StackPanel x:Name="DiscoveryControls">
+            <Button Content="Discover devices" Click="Discover" Margin="0,5,0,8" />
+            <TextBlock Text="Discovery duration (seconds)" />
+            <TextBox x:Name="DiscoverySeconds" Text="30" />
+            <Expander Header="Discovery options" Margin="0,5,0,8">
+              <StackPanel>
+                <TextBlock Text="Optional directed target" Foreground="{StaticResource Muted}" />
+                <TextBox x:Name="DiscoveryTarget" ToolTip="IPv4 address (default port 47808) or address:port; MS/TP MAC as hex (e.g. 12). Empty broadcasts locally." AutomationProperties.Name="Directed discovery target" />
+                <StackPanel Orientation="Horizontal">
+                  <TextBox x:Name="LowLimit" Width="108" ToolTip="Optional low device instance" AutomationProperties.Name="Low device limit" />
+                  <TextBox x:Name="HighLimit" Width="108" ToolTip="Optional high device instance" AutomationProperties.Name="High device limit" />
+                </StackPanel>
+                <TextBlock Text="Blank target broadcasts on the selected link. Optional instance limits above." TextWrapping="Wrap" Foreground="{StaticResource Muted}" Margin="0,4,0,12" />
+                <TextBlock Text="Remote network (0 = local / 65535 = global)" TextWrapping="Wrap" Foreground="{StaticResource Muted}" />
+                <TextBox x:Name="RemoteNetwork" Text="65535" AutomationProperties.Name="Discovery remote network" />
+              </StackPanel>
+            </Expander>
+            </StackPanel>
+          </StackPanel>
+          <Grid>
+            <TreeView MinHeight="180" x:Name="DeviceList" SelectedItemChanged="DeviceTreeSelected" VirtualizingStackPanel.IsVirtualizing="True" VirtualizingStackPanel.VirtualizationMode="Recycling" ScrollViewer.CanContentScroll="True">
+              <TreeView.Resources>
+                <HierarchicalDataTemplate DataType="{x:Type local:Peer}" ItemsSource="{Binding DeviceChildren}">
+                  <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="▣ " Foreground="#117D85" />
+                    <TextBlock Text="{Binding Caption}" />
+                    <TextBlock Text=" — " />
+                    <TextBlock Text="{Binding Address}" />
+                  </StackPanel>
+                </HierarchicalDataTemplate>
+                <DataTemplate DataType="{x:Type local:ObjectRow}">
+                  <TextBlock Text="{Binding Caption}" ToolTip="Select to read all properties" />
+                </DataTemplate>
+                <Style TargetType="TreeViewItem">
+                  <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
+                  <Setter Property="Padding" Value="2,3" />
+                </Style>
+              </TreeView.Resources>
+            </TreeView>
+            <DockPanel x:Name="ObjectPane" Visibility="Collapsed">
+              <DataGrid x:Name="ObjectGrid" SelectionMode="Extended" SelectionChanged="ObjectSelected" RowHeight="26">
+                <DataGrid.Columns>
+                  <DataGridTextColumn Header="Object" Binding="{Binding ObjectLabel}" Width="85" />
+                  <DataGridTextColumn Header="Type" Binding="{Binding Kind}" Width="120" />
+                  <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*" />
+                  <DataGridTextColumn Header="PV" Binding="{Binding DisplayValue}" Width="75" />
+                </DataGrid.Columns>
+              </DataGrid>
+            </DockPanel>
+          </Grid>
+        </DockPanel>
+      </Border>
+      <GridSplitter Grid.Column="1" Width="6" HorizontalAlignment="Center" VerticalAlignment="Stretch" /><TabControl Grid.Column="2" x:Name="Tabs">
+        <TabItem Header="Explorer">
+          <Grid>
+            <Grid.RowDefinitions>
+              <RowDefinition Height="Auto" />
+              <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <DockPanel x:Name="ExplorerHeader" Margin="0,0,0,8">
+              <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                <Button Content="Refresh objects" Click="RefreshInventory" />
+                <Button Content="Read names &amp; values" Click="ReadObjectValues" />
+                <Button Content="Watch selected" Click="WatchObjects" />
+              </StackPanel>
+              <StackPanel>
+                <TextBlock x:Name="SelectedDeviceTitle" Text="Select a device" FontSize="20" FontWeight="SemiBold" />
+                <TextBlock x:Name="InventorySummary" Text="Connect and discover to begin." Foreground="{StaticResource Muted}" Margin="0,3,0,0" />
+              </StackPanel>
+            </DockPanel>
+            <Grid Grid.Row="1">
+              <Grid x:Name="PropertyInspectorContent">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="2*" MinWidth="260" />
+                <ColumnDefinition x:Name="PropertyEditDivider" Width="0" />
+                <ColumnDefinition x:Name="PropertyEditColumn" Width="0" MaxWidth="520" />
+              </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="*" /></Grid.RowDefinitions>
+                <DockPanel Grid.Row="0" Margin="0,0,0,8">
+                  <Button DockPanel.Dock="Right" Content="Refresh properties" Click="RefreshProperties" />
+                  <StackPanel><TextBlock Text="PROPERTIES" FontWeight="SemiBold" /><TextBlock Text="Select a property to inspect or edit." TextWrapping="Wrap" Foreground="#65788F" /></StackPanel>
+                </DockPanel>
+                <StackPanel x:Name="PriorityPanel" Grid.Row="1" Visibility="Collapsed" Margin="0,0,0,6">
+                  <TextBlock x:Name="PresentValueSummary" FontWeight="SemiBold" Margin="0,0,0,6" />
+                  <DataGrid x:Name="PriorityGrid" RowHeight="32" HeadersVisibility="Column" HorizontalScrollBarVisibility="Auto" IsReadOnly="False" SelectionUnit="Cell" SelectionMode="Single" CellEditEnding="PriorityCellEditEnding" PreparingCellForEdit="PreparePriorityEdit" />
+                  <WrapPanel x:Name="PriorityActions" Margin="0,5,0,0">
+                    <TextBlock Text="Edit priorities (PV6 reserved)" Margin="0,0,8,0" />
+                    <Button x:Name="WritePriorityButton" Content="Write changes…" Click="WritePriorityChanges" IsEnabled="False" Background="#117D85" Foreground="White" />
+                    <Button Content="Relinquish selected" Click="RelinquishPriority" />
+                    <Button Content="Relinquish operator priorities…" Click="RelinquishAllPriorities" />
+                  </WrapPanel>
+                  <TextBlock x:Name="PriorityPendingSummary" Text="No pending writes." Foreground="#65788F" Margin="0,4,0,0" />
+                </StackPanel>
+                <DataGrid x:Name="PropertyGrid" Grid.Row="2" Grid.Column="0" RowHeight="34" SelectionChanged="PropertySelected" SelectionMode="Extended" MouseDoubleClick="EditSelectedProperty">
+                  <DataGrid.Columns>
+                    <DataGridTextColumn Header="Property" Binding="{Binding DisplayName}" Width="150" />
+                    <DataGridTextColumn Header="Type" Binding="{Binding DisplayType}" Width="100" />
+                    <DataGridTextColumn Header="Value" Binding="{Binding DisplayValue}" Width="*" MinWidth="140" />
+                    <DataGridTextColumn Header="Error" Binding="{Binding Error}" Width="130" />
+                    <DataGridTextColumn Header="Access" Binding="{Binding AccessStatus}" Width="105"><DataGridTextColumn.ElementStyle><Style TargetType="TextBlock"><Setter Property="ToolTip" Value="{Binding AccessReason}" /></Style></DataGridTextColumn.ElementStyle></DataGridTextColumn>
+                    <DataGridTemplateColumn x:Name="PropertyChangeColumn" Header="Change" Width="72"><DataGridTemplateColumn.CellTemplate><DataTemplate>
+                      <Button Content="Edit" Click="BeginPropertyEdit" Tag="{Binding}" IsEnabled="{Binding CanEdit}" MinHeight="0" Height="24" VerticalAlignment="Center" Padding="7,1" Margin="0" ToolTip="{Binding AccessReason}"><Button.Style><Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}"><Setter Property="Visibility" Value="Collapsed" /><Style.Triggers><DataTrigger Binding="{Binding CanEdit}" Value="True"><Setter Property="Visibility" Value="Visible" /></DataTrigger></Style.Triggers></Style></Button.Style></Button>
+                    </DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+                  </DataGrid.Columns>
+                  <DataGrid.RowDetailsTemplate>
+                    <DataTemplate>
+                      <Expander Header="Advanced: encoded BACnet data (read-only hex)" IsExpanded="False" Margin="8,3"><TextBox Text="{Binding Raw}" IsReadOnly="True" TextWrapping="Wrap" MaxHeight="90" VerticalScrollBarVisibility="Auto" /></Expander>
+                    </DataTemplate>
+                  </DataGrid.RowDetailsTemplate>
+                </DataGrid>
+              <GridSplitter x:Name="PropertyEditSplitter" Grid.Row="0" Grid.RowSpan="3" Grid.Column="1" Width="6" HorizontalAlignment="Center" VerticalAlignment="Stretch" ResizeDirection="Columns" ResizeBehavior="PreviousAndNext" ShowsPreview="True" Background="#CDDAE8" Visibility="Collapsed" ToolTip="Drag to resize the property editor" />
+              <Expander x:Name="PropertyEditor" Header="Selected property" Grid.Row="0" Grid.RowSpan="3" Grid.Column="2" Margin="8,0,0,0" Expanded="PropertyEditorLayoutChanged" Collapsed="PropertyEditorLayoutChanged">
+                <Grid>
+                  <Grid.RowDefinitions><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+                  <ScrollViewer x:Name="PropertyEditorScroll" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" CanContentScroll="False">
+                <Border Background="#EDF4FA" Padding="12" Margin="0,8,0,0" CornerRadius="5">
+                  <StackPanel>
+                    <TextBlock x:Name="PropertyEditTitle" TextWrapping="Wrap" Text="Select a property to edit its value" FontSize="15" FontWeight="SemiBold" />
+                    <TextBlock x:Name="PropertyCurrentValue" TextWrapping="Wrap" MaxHeight="55" Margin="0,4,0,5" />
+                    <TextBlock x:Name="PropertyAccessSummary" TextWrapping="Wrap" Foreground="#536B86" Margin="0,3,0,4" />
+                    <TextBlock x:Name="PropertyEditHint" Foreground="#65788F" TextWrapping="Wrap" />
+                    <Button Content="Read present value" Click="ReadPresentValue" HorizontalAlignment="Left" Margin="0,6,0,0" ToolTip="Read the present value of the selected object" />
+                    <Button x:Name="UsePropertyEditorButton" Content="Open visual editor" Click="OpenVisualPropertyEditor" HorizontalAlignment="Left" Visibility="Collapsed" />
+                    <Expander Header="Advanced tools" Margin="0,6,0,0">
+                    <StackPanel>
+                    <CheckBox x:Name="AdvancedPropertyAttempt" Click="AdvancedAttemptChanged" IsEnabled="False"><TextBlock Text="Attempt a device-specific write (permission is unverified)" TextWrapping="Wrap" /></CheckBox>
+                    <WrapPanel>
+                      <StackPanel>
+                        <TextBlock Text="Object ID (for example, BI:6)" />
+                        <TextBox x:Name="ObjectId" Text="AV:1" Width="190" ToolTip="AI/AO/AV, BI/BO/BV, MSI/MSO/MSV, SCH, CAL, DEV; numeric type:instance also works" />
+                      </StackPanel>
+                      <StackPanel>
+                        <TextBlock Text="Property to read or change" />
+                        <TextBox x:Name="PropertyId" Text="present-value" Width="185" />
+                      </StackPanel>
+                      <StackPanel>
+                        <TextBlock Text="Array item (blank = all items)" />
+                        <TextBox x:Name="ArrayIndex" Width="150" />
+                      </StackPanel>
+                      <Button Content="Read present value" Click="ReadPresentValue" VerticalAlignment="Bottom" Margin="0,0,7,3" />
+                      <Button Content="Read this property" Click="ReadCustom" VerticalAlignment="Bottom" Margin="0,0,7,3" />
+                      <Button Content="Add watch" Click="WatchProperty" VerticalAlignment="Bottom" Margin="0,0,7,3" />
+                      <Button Content="Request selected writes…" Click="BulkWrite" VerticalAlignment="Bottom" Margin="0,0,0,3" />
+                    </WrapPanel>
+                    </StackPanel>
+                    </Expander>
+                    <StackPanel x:Name="PropertyWriteInputs" Margin="0,7,0,0" Visibility="Collapsed">
+                      <StackPanel>
+                        <TextBlock x:Name="PropertyValueLabel" Text="New value" />
+                        <TextBox x:Name="WriteValue" HorizontalAlignment="Stretch" Text="" />
+                        <ComboBox x:Name="BooleanWriteValue" HorizontalAlignment="Stretch" Visibility="Collapsed" DisplayMemberPath="Label" SelectedValuePath="Value" SelectedValue="{Binding Text, ElementName=WriteValue, Mode=TwoWay}" />
+                        <WrapPanel><DatePicker x:Name="PropertyDatePicker" Width="170" Visibility="Collapsed" SelectedDateChanged="PropertyDateChanged" /><ComboBox x:Name="PropertyWeekday" Width="170" Visibility="Collapsed" DisplayMemberPath="Label" SelectedValuePath="Value" /></WrapPanel>
+                        <ItemsControl x:Name="PropertyFlags" Visibility="Collapsed"><ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel MaxWidth="650" /></ItemsPanelTemplate></ItemsControl.ItemsPanel><ItemsControl.ItemTemplate><DataTemplate><CheckBox Content="{Binding Label}" IsChecked="{Binding Enabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Click="PropertyFlagChanged" /></DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
+                        <DataGrid x:Name="PropertyArrayGrid" HorizontalAlignment="Stretch" MinWidth="0" MaxHeight="200" RowHeight="38" Visibility="Collapsed" IsReadOnly="False" CanUserAddRows="False"><DataGrid.Columns><DataGridTextColumn Header="Item" Binding="{Binding Index}" IsReadOnly="True" Width="70" /><DataGridTextColumn Header="Value" Binding="{Binding Value, UpdateSourceTrigger=PropertyChanged}" Width="*" /></DataGrid.Columns></DataGrid>
+                      </StackPanel>
+                      <StackPanel x:Name="PropertyPriorityOptions" Margin="0,8,0,0">
+                        <TextBlock Text="Command priority (1–16)" />
+                        <TextBox x:Name="Priority" Text="8" Width="130" />
+                      </StackPanel>
+                    </StackPanel>
+                    <TextBlock Text="Save sends this change to the selected device." Foreground="{StaticResource Muted}" TextWrapping="Wrap" Margin="0,8,0,0" />
+                  </StackPanel>
+                </Border>
+                  </ScrollViewer>
+                  <Border Grid.Row="1" Background="#EDF4FA" Padding="12,8" Visibility="{Binding Visibility, ElementName=PropertyWriteInputs}">
+                    <WrapPanel>
+                      <Button Content="Save change" Click="WriteProperty" VerticalAlignment="Bottom" Margin="0,0,7,3" />
+                      <Button x:Name="PropertyRelinquishButton" Content="Relinquish" Click="Relinquish" VerticalAlignment="Bottom" Margin="0,0,7,3" />
+                    </WrapPanel>
+                  </Border>
+                </Grid>
+              </Expander>
+              </Grid>
+              <ContentControl x:Name="ObjectEditorHost" Visibility="Collapsed" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" />
+            </Grid>
+          </Grid>
+        </TabItem>
+        <TabItem Header="Watch &amp; trends">
+          <Grid>
+            <Grid.RowDefinitions>
+              <RowDefinition Height="Auto" />
+              <RowDefinition Height="*" />
+              <RowDefinition Height="240" />
+              <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <WrapPanel Margin="0,0,0,12">
+              <Button x:Name="MonitorButton" Content="Start polling" Click="ToggleMonitor" />
+              <Button Content="Read now" Click="PollNow" />
+              <TextBlock Text="Interval (s)" />
+              <TextBox x:Name="PollInterval" Text="3" Width="60" />
+              <Button Content="Subscribe COV" Click="SubscribeCov" />
+              <Button Content="Cancel COV" Click="CancelCov" />
+              <Button Content="Remove" Click="RemoveWatch" />
+              <Button Content="Export history" Click="ExportHistory" />
+            </WrapPanel>
+            <DataGrid x:Name="WatchGrid" Grid.Row="1" SelectionChanged="WatchSelected">
+              <DataGrid.Columns>
+                <DataGridTextColumn Header="Device" Binding="{Binding Caption}" Width="140" />
+                <DataGridTextColumn Header="Object" Binding="{Binding ObjectLabel}" Width="90" />
+                <DataGridTextColumn Header="Property" Binding="{Binding Property}" Width="150" />
+                <DataGridTextColumn Header="Value" Binding="{Binding Value}" Width="*" />
+                <DataGridTextColumn Header="Quality" Binding="{Binding Quality}" Width="110" />
+                <DataGridTextColumn Header="Updated" Binding="{Binding Updated}" Width="100" />
+              </DataGrid.Columns>
+            </DataGrid>
+            <Border Grid.Row="2" Background="White" BorderBrush="#DAE3ED" BorderThickness="1" Padding="10" Margin="0,12,0,0">
+              <local:TrendChart x:Name="Chart" />
+            </Border>
+            <TextBlock Grid.Row="3" Text="Select a watch to chart its numeric samples. History keeps the latest 1,000 observations per watch (maximum 64 watches). Errors create gaps. COV renews every 45 seconds while connected; polling is optional reconciliation." TextWrapping="Wrap" Foreground="{StaticResource Muted}" Margin="0,10,0,0" />
+          </Grid>
+        </TabItem>
+        <TabItem Header="Snapshots">
+          <DockPanel>
+            <StackPanel DockPanel.Dock="Top">
+              <TextBlock Text="Inspect change with evidence" FontSize="21" FontWeight="SemiBold" />
+              <TextBlock Text="Capture reads object names, present values and units for the selected device. Compare includes address, property, array index, raw bytes and errors." TextWrapping="Wrap" Foreground="{StaticResource Muted}" Margin="0,6,0,12" />
+              <WrapPanel>
+                <Button Content="Capture baseline" Click="CaptureBaseline" />
+                <Button Content="Compare live" Click="CompareLive" />
+                <Button Content="Load baseline" Click="LoadBaseline" />
+                <Button Content="Save baseline" Click="SaveBaseline" />
+                <Button Content="Export differences" Click="ExportDifferences" />
+              </WrapPanel>
+              <TextBlock x:Name="SnapshotSummary" Text="No baseline captured." Foreground="#087F82" Margin="0,12,0,12" />
+            </StackPanel>
+            <DataGrid x:Name="DifferenceGrid">
+              <DataGrid.Columns>
+                <DataGridTextColumn Header="Object" Binding="{Binding ObjectLabel}" Width="100" />
+                <DataGridTextColumn Header="Property" Binding="{Binding Property}" Width="160" />
+                <DataGridTextColumn Header="Baseline" Binding="{Binding Before}" Width="*" />
+                <DataGridTextColumn Header="Live" Binding="{Binding After}" Width="*" />
+                <DataGridTextColumn Header="Change" Binding="{Binding Change}" Width="95" />
+              </DataGrid.Columns>
+            </DataGrid>
+          </DockPanel>
+        </TabItem>
+        <TabItem Header="Events">
+          <DockPanel>
+            <StackPanel DockPanel.Dock="Top">
+              <TextBlock Text="Active event information" FontSize="21" FontWeight="SemiBold" />
+              <TextBlock Text="Read the selected device's active events through GetEventInformation. Select an event and a transition to acknowledge its exact returned timestamp." Foreground="{StaticResource Muted}" Margin="0,7,0,12" TextWrapping="Wrap" />
+              <WrapPanel Margin="0,0,0,12">
+                <Button Content="Read active events" Click="ReadEvents" />
+                <ComboBox x:Name="AckTransition" SelectedIndex="0" Width="150">
+                  <ComboBoxItem Content="TO_OFFNORMAL" />
+                  <ComboBoxItem Content="TO_FAULT" />
+                  <ComboBoxItem Content="TO_NORMAL" />
+                </ComboBox>
+                <TextBox x:Name="AckSource" Text="Operator" Width="150" ToolTip="Acknowledgment source" />
+                <Button Content="Acknowledge selected…" Click="AcknowledgeEvent" />
+              </WrapPanel>
+            </StackPanel>
+            <DataGrid x:Name="EventGrid">
+              <DataGrid.Columns>
+                <DataGridTextColumn Header="Object" Binding="{Binding ObjectLabel}" Width="110" />
+                <DataGridTextColumn Header="State" Binding="{Binding State}" Width="130" />
+                <DataGridTextColumn Header="Notify type" Binding="{Binding NotifyType}" Width="130" />
+                <DataGridTextColumn Header="Acknowledged" Binding="{Binding Acknowledged}" Width="*" />
+                <DataGridTextColumn Header="Priorities" Binding="{Binding PriorityDisplay}" Width="180" />
+              </DataGrid.Columns>
+            </DataGrid>
+          </DockPanel>
+        </TabItem>
+        <TabItem Header="Object management">
+          <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+              <TextBlock Text="Selected device · object lifecycle" FontSize="18" FontWeight="SemiBold" />
+              <TextBlock Text="Use the device selected in the explorer. Create and delete requests show the exact target before confirmation." TextWrapping="Wrap" Margin="0,8,0,12" />
+              <WrapPanel>
+                <StackPanel><TextBlock Text="Object identifier (type:instance)" /><TextBox x:Name="ManagementObject" Text="2:1" Width="200" /></StackPanel>
+                <CheckBox x:Name="AllocateInstance" Content="Device allocates instance" />
+                <StackPanel><TextBlock Text="Object type for allocation" /><TextBox x:Name="CreationType" Text="2" Width="170" /></StackPanel>
+              </WrapPanel>
+              <TextBlock Text="Initial properties · JSON array of property, valueType, value and optional index" Margin="0,12,0,0" />
+              <TextBox x:Name="InitialProperties" Text="[]" AcceptsReturn="True" TextWrapping="Wrap" Height="130" VerticalScrollBarVisibility="Auto" FontFamily="Consolas" />
+              <WrapPanel Margin="0,8,0,20">
+                <Button Content="Create object…" Click="CreateDeviceObject" />
+                <Button Content="Delete object…" Click="DeleteDeviceObject" />
+                <Button Content="Export device database…" Click="ExportDeviceDatabase" />
+              </WrapPanel>
+              <TextBlock Text="Device communication control" FontSize="18" FontWeight="SemiBold" />
+              <WrapPanel Margin="0,10,0,0">
+                <ComboBox x:Name="CommunicationMode" SelectedIndex="0" Width="200"><ComboBoxItem Content="Enable" /><ComboBoxItem Content="Disable initiation" /></ComboBox>
+                <StackPanel><TextBlock Text="Duration in minutes" /><TextBox x:Name="CommunicationMinutes" Text="5" Width="130" /></StackPanel>
+                <PasswordBox x:Name="CommunicationPassword" Width="160" Height="32" ToolTip="Optional device password" />
+                <Button Content="Apply communication control…" Click="ControlCommunications" />
+              </WrapPanel>
+              <TextBlock x:Name="ManagementResult" Text="Select a device in the explorer." TextWrapping="Wrap" Margin="0,16,0,0" />
+            </StackPanel>
+          </ScrollViewer>
+        </TabItem>
+        <TabItem Header="Files &amp; device">
+          <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+              <TextBlock Text="File transfer and device actions" FontSize="21" FontWeight="SemiBold" />
+              <TextBlock Text="Actions apply only to the selected address-qualified device. File access uses the File object below; uploads overwrite bytes at the selected offset and do not truncate an existing file." TextWrapping="Wrap" Foreground="{StaticResource Muted}" Margin="0,8,0,14" />
+              <WrapPanel>
+                <StackPanel>
+                  <TextBlock Text="File object" />
+                  <TextBox x:Name="FileObject" Text="10:1" Width="120" />
+                </StackPanel>
+                <StackPanel>
+                  <TextBlock Text="Start byte / record" />
+                  <TextBox x:Name="FileOffset" Text="0" Width="150" />
+                </StackPanel>
+                <CheckBox x:Name="RecordMode" Content="Record mode (base64 JSON records)" />
+              </WrapPanel>
+              <WrapPanel Margin="0,10,0,20">
+                <Button Content="Download file…" Click="DownloadFile" />
+                <Button Content="Request file upload…" Click="UploadFile" />
+              </WrapPanel>
+              <TextBlock Text="Device management" FontSize="18" FontWeight="SemiBold" />
+              <TextBlock Text="These operations change the device. A UTC time synchronization is unconfirmed; verify the device clock afterwards. Restart may interrupt controls and communication." TextWrapping="Wrap" Foreground="{StaticResource Muted}" Margin="0,8,0,12" />
+              <WrapPanel>
+                <Button Content="Synchronize UTC time…" Click="SynchronizeTime" />
+                <ComboBox x:Name="RestartKind" SelectedIndex="0" Width="150">
+                  <ComboBoxItem Content="Warm restart" />
+                  <ComboBoxItem Content="Cold restart" />
+                </ComboBox>
+                <PasswordBox x:Name="RestartPassword" Width="160" Height="32" ToolTip="Optional device management password; never saved" Margin="0,0,10,0" />
+                <Button Content="Restart device…" Click="RestartDevice" />
+              </WrapPanel>
+              <TextBlock x:Name="FileProgress" Text="No file operation active." Foreground="#087F82" TextWrapping="Wrap" Margin="0,20,0,0" />
+            </StackPanel>
+          </ScrollViewer>
+        </TabItem>
+        <TabItem Header="Diagnostics">
+          <DockPanel>
+            <StackPanel DockPanel.Dock="Top">
+              <WrapPanel Margin="0,0,0,10">
+                <Button Content="Connection counters" Click="ReadStatus" />
+                <Button Content="Discover routers" Click="ReadRouters" />
+                <Button Content="Read BBMD tables" Click="InspectBbmd" />
+                <Button Content="Received APDUs" Click="ReadTraffic" />
+                <Button Content="Save diagnostics" Click="SaveDiagnostics" />
+                <Button Content="Read list / log range" Click="ReadRange" />
+                <TextBlock Text="Start position" />
+                <TextBox x:Name="RangeStart" Text="1" Width="80" />
+                <TextBlock Text="Count" />
+                <TextBox x:Name="RangeCount" Text="20" Width="65" />
+              </WrapPanel>
+              <TextBlock Text="ReadRange uses the object, property and array index in the Explorer editor. For a Trend Log, select log-buffer. Results retain exact encoded data. Counters come from the stack's live owners." Foreground="{StaticResource Muted}" TextWrapping="Wrap" Margin="0,0,0,12" />
+            </StackPanel>
+            <TextBox x:Name="Diagnostics" IsReadOnly="True" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" FontFamily="Consolas" />
+          </DockPanel>
+        </TabItem>
+        <TabItem Header="Activity">
+          <DockPanel>
+            <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,12">
+              <Button Content="Export activity" Click="ExportActivity" />
+              <Button Content="Export properties" Click="ExportProperties" />
+              <TextBlock Text="Latest 1,000 operations · local session history" Foreground="{StaticResource Muted}" />
+            </WrapPanel>
+            <DataGrid x:Name="ActivityGrid">
+              <DataGrid.Columns>
+                <DataGridTextColumn Header="Time" Binding="{Binding Time}" Width="100" />
+                <DataGridTextColumn Header="Operation" Binding="{Binding Operation}" Width="150" />
+                <DataGridTextColumn Header="Target" Binding="{Binding Target}" Width="220" />
+                <DataGridTextColumn Header="Result" Binding="{Binding Result}" Width="*" />
+              </DataGrid.Columns>
+            </DataGrid>
+          </DockPanel>
+        </TabItem>
+      </TabControl>
+    </Grid>
+    <DockPanel Grid.Row="3" Margin="0,12,0,0">
+      <ProgressBar x:Name="Progress" Width="100" Height="4" DockPanel.Dock="Right" Visibility="Collapsed" IsIndeterminate="True" />
+      <TextBlock x:Name="Status" Text="Ready · Offline. Open a workspace or configure a connection." Foreground="{StaticResource Muted}" TextTrimming="CharacterEllipsis" />
+    </DockPanel>
+  </Grid>
+</Window>

@@ -1,0 +1,62 @@
+GO BACNET ENGINE BINARY LICENSE
+Copyright (c) 2026 Clayton Plymill. All rights reserved.
+
+1. Scope and ownership
+This license applies only to the compiled Go BACnet engine supplied with Go
+BACnet Workbench, including the Go BACnet Stack implementation embedded in that
+engine. It does not apply to Workbench application source identified as Apache
+License 2.0, or to third-party components governed by their own licenses.
+The engine and stack implementation remain proprietary. No implementation
+source code or ownership rights are granted by this license.
+
+2. Permitted use
+You may download, install and run the unmodified engine with Go BACnet Workbench
+for personal, educational, professional and business use, including diagnostic
+and commissioning services for others, without a license fee.
+You may use a modified Workbench application with the unmodified engine through
+the documented Workbench interface. These permissions do not grant a general
+BACnet SDK license for integration into other products or hosted services.
+
+3. Redistribution
+You may redistribute the unmodified engine as part of a Go BACnet Workbench
+distribution, including a modified Workbench application, provided that you
+retain this license and all required third-party notices, clearly identify
+modified application distributions, and do not claim endorsement by Clayton
+Plymill. You may not distribute the engine separately as a BACnet library,
+SDK, protocol implementation or standalone commercial product without a
+separate written license from Clayton Plymill.
+
+4. Restrictions
+Except as permitted above, no right is granted to modify, sublicense, sell,
+relicense, or incorporate the proprietary engine or stack into another product.
+You may not reverse engineer, decompile, disassemble or attempt to reconstruct
+its proprietary implementation, except to the extent applicable law permits
+such activity notwithstanding this restriction. Rights under third-party
+licenses and applicable law are not restricted by this license.
+
+5. Safety and authorization
+Use the software only on devices and networks you are authorized to access.
+BACnet commands may affect equipment, operation and communications. You are
+responsible for evaluating suitability, confirming targets, protecting data,
+and verifying changes. No safety, certification, conformance or fitness for a
+particular installation is warranted by this license.
+
+6. No warranty; limitation of liability
+TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, THE PROPRIETARY ENGINE IS
+PROVIDED "AS IS", WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, TITLE
+AND NON-INFRINGEMENT. TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW,
+CLAYTON PLYMILL SHALL NOT BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY OR CONSEQUENTIAL DAMAGES ARISING FROM USE OR INABILITY TO
+USE THE ENGINE, EVEN IF ADVISED OF THEIR POSSIBILITY. THIS DOES NOT EXCLUDE
+LIABILITY THAT CANNOT LAWFULLY BE EXCLUDED.
+
+7. Termination
+If you materially violate this license, the permissions granted here terminate.
+You must then stop using and distributing the proprietary engine. Rights you
+have independently under Apache License 2.0 or third-party licenses continue
+under those licenses. All rights not expressly granted here are reserved.
+
+For integration, SDK, redistribution or commercial product licensing beyond
+these permissions, contact the repository owner at
+https://github.com/cplymill/go-bacnet-workbench.

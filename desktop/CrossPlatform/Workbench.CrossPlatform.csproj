@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <AssemblyName>GoBACnetWorkbench</AssemblyName>
+    <Version>0.2.20</Version>
+    <AvaloniaVersion>12.1.2</AvaloniaVersion>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Avalonia.Desktop" Version="$(AvaloniaVersion)" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="$(AvaloniaVersion)" />
+    <PackageReference Include="Avalonia.Controls.DataGrid" Version="$(AvaloniaVersion)" />
+    <PackageReference Include="Avalonia.Fonts.Inter" Version="$(AvaloniaVersion)" />
+    <Compile Include="../BACnetExplorer/EngineClient.cs" Link="Shared/EngineClient.cs" />
+    <Compile Include="../BACnetExplorer/Models.cs" Link="Shared/Models.cs" />
+    <Compile Include="../BACnetExplorer/ObjectLabels.cs" Link="Shared/ObjectLabels.cs" />
+    <Compile Include="../BACnetExplorer/OperationFailure.cs" Link="Shared/OperationFailure.cs" />
+    <Compile Include="../BACnetExplorer/PropertyEditPolicy.cs" Link="Shared/PropertyEditPolicy.cs" />
+    <Compile Include="../BACnetExplorer/PropertyReadOnlyRules.cs" Link="Shared/PropertyReadOnlyRules.cs" />
+    <Compile Include="../BACnetExplorer/PropertyValueEditor.cs" Link="Shared/PropertyValueEditor.cs" />
+    <Compile Include="../BACnetExplorer/ScheduleDocument.cs" Link="Shared/ScheduleDocument.cs" />
+    <Compile Include="../BACnetExplorer/CalendarModels.cs" Link="Shared/CalendarModels.cs" />
+    <AvaloniaResource Include="../branding/go-bacnet-workbench-logo-v3.png" Link="Assets/Logo.png" />
+  </ItemGroup>
+</Project>
