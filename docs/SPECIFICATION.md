@@ -1,8 +1,11 @@
 # Go BACnet Workbench — product specification
 
-**Version covered:** 0.2.20  
-**Reviewed:** November 23, 2026  
-**Primary application:** Windows x64 desktop  
+**Version covered:** 0.2.20
+
+**Reviewed:** November 23, 2026
+
+**Primary application:** Windows x64 desktop
+
 **Additional distribution:** untested macOS desktop preview, Apple Silicon and Intel
 
 This specification describes implemented application behavior in the published
