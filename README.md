@@ -8,6 +8,9 @@ editing properties, and troubleshooting building automation networks.
 Windows is the primary supported application. The installer includes the runtime
 and compiled BACnet engine; Go and .NET are not required to use it.
 
+Read the **[full product specification](docs/SPECIFICATION.md)** for all implemented
+workflows, transport settings, limits, exports and Windows/Mac differences.
+
 ![Go BACnet Workbench on Windows reading a device's objects and properties](docs/images/windows-explorer.png)
 
 Actual Windows 0.2.19 application connected to a device. Version 0.2.20 retains this
