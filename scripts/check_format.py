@@ -1,5 +1,6 @@
 """Enforce formatting only on changed source; leave untouched history alone."""
 import argparse
+import os
 import tempfile
 from pathlib import Path
 import subprocess
@@ -27,9 +28,12 @@ if csharp:
     else:
         subprocess.run(["dotnet", "format", "whitespace", str(ROOT), "--folder", "--verify-no-changes", "--include", *csharp], cwd=ROOT, check=True)
 if go:
+    # Resolve go.mod's toolchain before choosing gofmt; do not use a stale PATH copy.
+    toolchain = Path(subprocess.check_output(["go", "env", "GOROOT"], cwd=ROOT).decode().strip())
+    gofmt = toolchain / "bin" / ("gofmt.exe" if os.name == "nt" else "gofmt")
     for name in go:
         content = git("show", ":" + name) if args.staged else (ROOT / name).read_bytes()
-        result = subprocess.run(["gofmt"], input=content, capture_output=True, check=True)
+        result = subprocess.run([str(gofmt)], input=content, capture_output=True, check=True)
         if result.stdout != content:
             raise SystemExit("Run gofmt on changed file: " + name)
 print("PASS: changed C# and Go formatting" if csharp or go else "PASS: no changed C#/Go files to format")
