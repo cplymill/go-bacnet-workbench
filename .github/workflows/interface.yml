@@ -1,13 +1,48 @@
 name: Application checks
-on: [push, pull_request]
+on:
+  push:
+    branches: ['**']
+  pull_request:
 permissions:
   contents: read
+concurrency:
+  group: application-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
-  windows:
+  policy:
+    name: Repository policy
     runs-on: windows-latest
+    timeout-minutes: 10
+    env:
+      BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+      PR_TITLE: ${{ github.event.pull_request.title }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.13'
+      - uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
+        with:
+          dotnet-version: '10.0.x'
+      - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6
+        with:
+          go-version-file: go.mod
+          cache: false
+      - run: python -m unittest discover -s scripts/tests
+      - run: python scripts/check_repository.py --base "$env:BASE_SHA"
+      - run: python scripts/check_format.py --base "$env:BASE_SHA"
+  windows:
+    name: Windows application checks
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
         with:
           dotnet-version: '10.0.x'
       - run: dotnet run --project desktop/checks/DesktopChecks.csproj -c Release
