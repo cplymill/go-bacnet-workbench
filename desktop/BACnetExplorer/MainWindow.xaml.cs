@@ -140,7 +140,8 @@ public partial class MainWindow : Window
             DisconnectButton.IsEnabled = connected;
             Transport.IsEnabled = !connected;
             ConnectionFields.IsEnabled = !connected;
-            DeviceList.IsEnabled = ObjectGrid.IsEnabled = objectEditor?.IsBusy != true;
+            DeviceList.IsEnabled = connected && objectEditor?.IsBusy != true;
+            ObjectGrid.IsEnabled = objectEditor?.IsBusy != true;
             PriorityGrid.IsEnabled = PriorityActions.IsEnabled = true;
             PropertyGrid.IsEnabled = PropertyEditor.IsEnabled = objectEditor?.IsBusy != true;
             operationDone.TrySetResult();
@@ -213,7 +214,9 @@ public partial class MainWindow : Window
         VerifyServerName.IsChecked = profile.VerifyServerName;
     }
 
-    private async void Connect(object sender, RoutedEventArgs e) => await Run("Connect", async () =>
+    private async void Connect(object sender, RoutedEventArgs e) => await Run("Connect", ConnectAndDiscover);
+
+    private async Task ConnectAndDiscover()
     {
         if (!CanLeaveInspector())
             return;
@@ -223,18 +226,18 @@ public partial class MainWindow : Window
                 await engine.DisposeAsync();
             engine = new EngineClient();
         }
-        if (peers.Count > 0)
-            SetOffline();
         var result = await Engine.Call("connect", Profile());
+        peers.Clear();
+        treeRoots.Clear();
+        SetConnectionState(true);
+        ResetDeviceView();
         timer.Start();
-        connected = true;
         notificationSequence = notificationDrops = 0;
         ConnectionSettings.IsExpanded = false;
-        ConnectionBadge.Text = "●  CONNECTED";
         Status.Text = "Connected · " + result.GetProperty("address").GetString();
         dirty = true;
         await DiscoverDevices();
-    });
+    }
 
     private async void Disconnect(object sender, RoutedEventArgs e)
     {
@@ -246,17 +249,20 @@ public partial class MainWindow : Window
     {
         if (!CanLeaveInspector())
             return;
-        await CancelAllSubscriptions();
-        await Engine.Call("disconnect");
+        if (connected)
+        {
+            await CancelAllSubscriptions();
+            await Engine.Call("disconnect");
+        }
         SetOffline();
     }
 
     private void MarkEngineUnavailable(string message)
     {
         timer.Stop();
-        connected = polling = false;
+        polling = false;
         MonitorButton.Content = "Start polling";
-        ConnectionBadge.Text = "●  OFFLINE";
+        SetConnectionState(false);
         foreach (var watch in watches)
         {
             watch.Process = 0;
@@ -269,34 +275,26 @@ public partial class MainWindow : Window
     private void SetOffline()
     {
         timer.Stop();
-        connected = polling = false;
+        polling = false;
         MonitorButton.Content = "Start polling";
-        ConnectionBadge.Text = "●  OFFLINE";
-        selectedPeer = null;
-        peers.Clear();
-        treeRoots.Clear();
-        objects.Clear();
-        replacingPropertyRows = true;
-        try
-        {
-            properties.Clear();
-        }
-        finally { replacingPropertyRows = false; }
-        ClearPriorityChanges();
-        focusedPeer = null;
-        ResetObjectEditor();
-        SetNavigationView();
-        PriorityPanel.Visibility = Visibility.Collapsed;
-        PriorityGrid.ItemsSource = null;
-        priorityPeer = null;
-        DeviceCount.Text = "0";
-        SelectedDeviceTitle.Text = "Select a device";
+        SetConnectionState(false);
+        ConnectionSettings.IsExpanded = true;
+        ResetDeviceView();
         foreach (var watch in watches)
         {
             watch.Process = 0;
             watch.Mark("Disconnected");
         }
-        Status.Text = "Disconnected. Captured data and history remain available.";
+        Status.Text = "Disconnected. Connect to discover devices.";
+    }
+
+    private void SetConnectionState(bool online)
+    {
+        connected = online;
+        ConnectionBadge.Text = online ? "●  CONNECTED" : "●  OFFLINE";
+        DiscoverButton.Content = online ? "Discover devices" : "Connect and discover";
+        DeviceList.IsEnabled = online && !busy && objectEditor?.IsBusy != true;
+        UpdateNavigationSummary();
     }
 
     private async void CancelOperation(object sender, RoutedEventArgs e)
@@ -314,8 +312,15 @@ public partial class MainWindow : Window
 
     private async void Discover(object sender, RoutedEventArgs e)
     {
+        if (!connected)
+        {
+            await Run("Connect", ConnectAndDiscover);
+            return;
+        }
+
         await InterruptBackgroundRead();
-        await Run("Discover", DiscoverDevices);
+        if (connected)
+            await Run("Discover", DiscoverDevices);
     }
     private async Task DiscoverDevices()
     {
@@ -373,9 +378,8 @@ public partial class MainWindow : Window
                     parent.Children.Add(peer);
             }
         }
-        DeviceCount.Text = peers.Count.ToString(CultureInfo.InvariantCulture);
         if (focusedPeer == null)
-            NavigationSummary.Text = $"{peers.Count} devices · {peers.Count(p => p.Router)} routers";
+            UpdateNavigationSummary();
         Status.Text = $"Discovering · {peers.Count} devices · {peers.Count(p => p.Router)} routers · Cancel operation stops the scan and keeps these results";
     }
 
@@ -408,8 +412,10 @@ public partial class MainWindow : Window
 
     private async void DeviceTreeSelected(object sender, RoutedPropertyChangedEventArgs<object> e)
     {
+        if (!connected || e.NewValue == null)
+            return;
         await InterruptBackgroundRead();
-        if (busy)
+        if (!connected || busy)
             return;
         if (DeviceList.SelectedItem is ObjectRow row && row.Owner is Peer owner)
         {
@@ -652,7 +658,8 @@ public partial class MainWindow : Window
         {
             if (!ReferenceEquals(objectEditor, editor))
                 return;
-            DeviceList.IsEnabled = ObjectGrid.IsEnabled = !working && !busy;
+            DeviceList.IsEnabled = connected && !working && !busy;
+            ObjectGrid.IsEnabled = !working && !busy;
             DisconnectButton.IsEnabled = connected && !working && !busy;
             Progress.Visibility = working || busy ? Visibility.Visible : Visibility.Collapsed;
         };
@@ -712,8 +719,14 @@ public partial class MainWindow : Window
     private void UpdateNavigationSummary()
     {
         DeviceCount.Text = (focusedPeer == null ? peers.Count : objects.Count).ToString(CultureInfo.InvariantCulture);
-        NavigationSummary.Text = focusedPeer == null ? $"{peers.Count} devices · {peers.Count(p => p.Router)} routers"
-            : $"{objects.Count} objects · {objects.Count(o => o.Name.Length > 0)} named · {objects.Count(o => o.Value.Length > 0)} present values\n{focusedPeer.Address} · route {focusedPeer.Route}";
+        if (focusedPeer != null)
+        {
+            NavigationSummary.Text = $"{objects.Count} objects · {objects.Count(o => o.Name.Length > 0)} named · {objects.Count(o => o.Value.Length > 0)} present values\n{focusedPeer.Address} · route {focusedPeer.Route}";
+            return;
+        }
+
+        var counts = $"{peers.Count} devices · {peers.Count(p => p.Router)} routers";
+        NavigationSummary.Text = connected ? counts : peers.Count == 0 ? "Offline" : $"Offline · Last discovery · {counts}";
     }
 
     private async void BackToDevices(object sender, RoutedEventArgs e)
@@ -721,17 +734,31 @@ public partial class MainWindow : Window
         await InterruptBackgroundRead();
         if (busy || objectEditor?.IsBusy == true || !CanLeaveInspector())
             return;
-        ResetObjectEditor();
+        ResetDeviceView();
+    }
+
+    private void ResetDeviceView()
+    {
         focusedPeer = selectedPeer = null;
-        inspectedObject = null;
         DeviceList.ItemsSource = null;
         DeviceList.ItemsSource = treeRoots;
-        DeviceFilter.Text = "";
-        properties.Clear();
+        DeviceFilter.Clear();
         objects.Clear();
+        replacingPropertyRows = true;
+        try
+        {
+            properties.Clear();
+        }
+        finally
+        {
+            replacingPropertyRows = false;
+        }
+        ResetObjectEditor();
         PriorityPanel.Visibility = Visibility.Collapsed;
+        PriorityGrid.ItemsSource = null;
+        priorityPeer = null;
         SelectedDeviceTitle.Text = "Select a device";
-        InventorySummary.Text = "Choose a device to browse its objects.";
+        InventorySummary.Text = connected ? "Choose a device to browse its objects." : "Connect and discover to begin.";
         SetNavigationView();
     }
     private async Task LoadProperties(Peer peer, string id)

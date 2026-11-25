@@ -28,7 +28,7 @@ internal static class DiscoveryChecks
 
     internal static async Task Run()
     {
-        foreach (var action in new[] { "restart", "disconnect", "close", "close-unresponsive-watch" })
+        foreach (var action in new[] { "restart", "disconnect", "disconnect-focused", "close", "close-unresponsive-watch" })
         {
             await using var engine = EngineClientChecks.Start();
             var window = new MainWindow();
@@ -43,6 +43,13 @@ internal static class DiscoveryChecks
             Check(Field<bool>(window, "busy"), "Discovery fixture completed unexpectedly.");
             Check(((Button)window.FindName("DisconnectButton")).IsEnabled,
                 "Discovery disabled Disconnect.");
+            void FocusDevice(Peer peer)
+            {
+                Set(window, "selectedPeer", peer);
+                Set(window, "focusedPeer", peer);
+                Invoke(window, "SetNavigationView");
+            }
+
             if (action == "restart")
             {
                 target.Text = "192.168.47.11";
@@ -54,16 +61,52 @@ internal static class DiscoveryChecks
                 await (Task)Invoke(window, "StopActiveOperation")!;
                 Check(!Field<bool>(window, "busy") && peers.Count == 2,
                     "Cancel did not release navigation and retain discovered results.");
-                Check(((TreeView)window.FindName("DeviceList")).IsEnabled,
-                    "Cancel left device selection disabled.");
+                var list = (TreeView)window.FindName("DeviceList");
+                Check(list.IsEnabled, "Cancel left device selection disabled.");
+                FocusDevice(peers[0]);
+                var back = (Button)window.FindName("BackButton");
+                back.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+                Check(Field<bool>(window, "connected") && list.Visibility == Visibility.Visible && list.Items.Count == 2,
+                    "All devices did not return to the live discovery results.");
             }
-            else if (action == "disconnect")
+            else if (action is "disconnect" or "disconnect-focused")
             {
+                var retained = peers.Single();
+                var list = (TreeView)window.FindName("DeviceList");
+                var settings = (Expander)window.FindName("ConnectionSettings");
+                settings.IsExpanded = false;
+                if (action == "disconnect-focused")
+                {
+                    await (Task)Invoke(window, "StopActiveOperation")!;
+                    FocusDevice(retained);
+                    Check(list.Visibility == Visibility.Collapsed, "Fixture did not enter the focused device view.");
+                }
+
                 Invoke(window, "Disconnect", null, new RoutedEventArgs());
                 await scan.WaitAsync(TimeSpan.FromSeconds(5));
                 await Until(() => !Field<bool>(window, "connected") && !Field<bool>(window, "busy"));
-                Check(((Button)window.FindName("ConnectButton")).IsEnabled,
-                    "Disconnect did not enable another connection.");
+                Check(((Button)window.FindName("ConnectButton")).IsEnabled && settings.IsExpanded,
+                    "Disconnect did not restore connection controls.");
+                Check(list.Visibility == Visibility.Visible && !list.IsEnabled &&
+                    list.Items.Count == 1 && ReferenceEquals(list.Items[0], retained),
+                    "Disconnect did not show the last discovery results as offline.");
+                Check(((TextBlock)window.FindName("NavigationSummary")).Text.Contains("Last discovery", StringComparison.Ordinal),
+                    "The offline device list is missing its last discovery status.");
+                var discover = (Button)window.FindName("DiscoverButton");
+                Check(((StackPanel)window.FindName("DiscoveryControls")).Visibility == Visibility.Visible &&
+                    discover.IsEnabled && Equals(discover.Content, "Connect and discover"),
+                    "Disconnect did not offer discovery from the Devices view.");
+
+                if (action == "disconnect-focused")
+                {
+                    target.Text = "192.168.47.12";
+                    discover.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+                    await Until(() => Field<bool>(window, "connected") && peers.Any(peer => peer.Address == "192.168.47.12"));
+                    Check(peers.Count == 1 && list.IsEnabled && Equals(discover.Content, "Discover devices"),
+                        "Reconnect did not replace stale routes with the new discovery results.");
+                    Invoke(window, "Disconnect", null, new RoutedEventArgs());
+                    await Until(() => !Field<bool>(window, "connected") && !Field<bool>(window, "busy"));
+                }
             }
             else
             {
@@ -82,6 +125,6 @@ internal static class DiscoveryChecks
                 Check(!engine.IsAvailable, "Close left its private engine available.");
             }
         }
-        Console.WriteLine("PASS: active directed search can be replaced, canceled with results retained, disconnected, and closed; an unresponsive COV cleanup cannot hold shutdown.");
+        Console.WriteLine("PASS: discovery can be replaced and canceled. Disconnect restores the offline device list and offers reconnection and a fresh scan. Close drains discovery and bounds COV cleanup.");
     }
 }

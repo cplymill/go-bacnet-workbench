@@ -159,7 +159,7 @@
               <TextBlock x:Name="NavigationTitle" Foreground="#20334D" Text="Devices" FontWeight="SemiBold" TextWrapping="Wrap" />
             </DockPanel>
             <Button x:Name="BackButton" Content="← All devices" Click="BackToDevices" Visibility="Collapsed" Margin="0,0,0,6" />
-            <TextBlock x:Name="NavigationSummary" Text="Discover to browse devices." TextWrapping="Wrap" Foreground="#65788F" Margin="0,0,0,6" />
+            <TextBlock x:Name="NavigationSummary" Text="Offline" TextWrapping="Wrap" Foreground="#65788F" Margin="0,0,0,6" />
             <TextBlock x:Name="NavigationSearchLabel" Text="Search devices" Foreground="#65788F" FontSize="12" />
             <TextBox x:Name="DeviceFilter" TextChanged="FilterDevices" ToolTip="Filter by device, address, route or vendor" AutomationProperties.Name="Filter devices" />
             <TextBox x:Name="ObjectFilter" TextChanged="FilterObjects" ToolTip="Search points by name, type, identifier or present value" AutomationProperties.Name="Search device objects" Visibility="Collapsed" />
@@ -168,7 +168,7 @@
               <Button Content="Refresh" Click="RefreshInventory" Padding="8,5" /><Button Content="All properties" Click="ViewObjectProperties" Padding="8,5" /><Button x:Name="VisualEditorButton" Content="Schedule view" Click="ViewObjectEditor" Padding="8,5" Visibility="Collapsed" />
             </WrapPanel>
             <StackPanel x:Name="DiscoveryControls">
-            <Button Content="Discover devices" Click="Discover" Margin="0,5,0,8" />
+            <Button x:Name="DiscoverButton" Content="Connect and discover" Click="Discover" Margin="0,5,0,8" />
             <TextBlock Text="Discovery duration (seconds)" />
             <TextBox x:Name="DiscoverySeconds" Text="30" />
             <Expander Header="Discovery options" Margin="0,5,0,8">

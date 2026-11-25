@@ -189,6 +189,14 @@ internal static class EngineClientChecks
                 Thread.Sleep(30000);
                 return;
             }
+            if (op == "connect")
+            {
+                Reply(id, new
+                {
+                    address = "fixture"
+                });
+                continue;
+            }
             if (op == "discover")
             {
                 held = id;
