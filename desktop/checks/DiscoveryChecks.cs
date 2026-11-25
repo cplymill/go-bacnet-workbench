@@ -16,12 +16,14 @@ internal static class DiscoveryChecks
         (T)typeof(MainWindow).GetField(name, Private)!.GetValue(window)!;
     private static void Check(bool condition, string message)
     {
-        if (!condition) throw new InvalidOperationException(message);
+        if (!condition)
+            throw new InvalidOperationException(message);
     }
     private static async Task Until(Func<bool> condition)
     {
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-        while (!condition()) await Task.Delay(10, timeout.Token);
+        while (!condition())
+            await Task.Delay(10, timeout.Token);
     }
 
     internal static async Task Run()
@@ -66,8 +68,11 @@ internal static class DiscoveryChecks
             else
             {
                 if (action == "close-unresponsive-watch")
-                    Field<ObservableCollection<Watch>>(window, "watches").Add(new Watch {
-                        Device = "fixture", Object = "2:1", Process = 7
+                    Field<ObservableCollection<Watch>>(window, "watches").Add(new Watch
+                    {
+                        Device = "fixture",
+                        Object = "2:1",
+                        Process = 7
                     });
                 var args = new CancelEventArgs();
                 Invoke(window, "WindowClosing", window, args);
