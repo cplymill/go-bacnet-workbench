@@ -76,7 +76,7 @@ public sealed partial class WorkbenchWindow : Window
     internal WorkbenchWindow(EngineClient? injectedEngine, bool initialize)
     {
         engine = injectedEngine;
-        Title = "Go BACnet Workbench 0.2.21 · Cross-platform preview";
+        Title = $"Go BACnet Workbench {typeof(WorkbenchWindow).Assembly.GetName().Version?.ToString(3)} · Cross-platform preview";
         Width = 1530;
         Height = 920;
         MinWidth = 1120;

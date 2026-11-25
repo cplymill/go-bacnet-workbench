@@ -3,7 +3,7 @@
 A Windows desktop application for discovering BACnet devices, inspecting objects,
 editing properties, and troubleshooting building automation networks.
 
-**[Download the Windows installer](https://github.com/cplymill/go-bacnet-workbench/releases/download/v0.2.21/GoBACnetWorkbench-0.2.21-x64.msi)**
+**[Download the Windows installer](https://github.com/cplymill/go-bacnet-workbench/releases/latest)**
 
 Windows is the primary supported application. The installer includes the runtime
 and compiled BACnet engine; Go and .NET are not required to use it.
@@ -13,8 +13,7 @@ workflows, transport settings, limits, exports and Windows/Mac differences.
 
 ![Go BACnet Workbench on Windows reading a device's objects and properties](docs/images/windows-explorer.png)
 
-Actual Windows 0.2.19 application connected to a device. Version 0.2.21 retains this
-Windows interface and adds priority-array and relinquish-default snapshot comparison.
+Actual Windows 0.2.19 application connected to a device.
 
 ## Working with devices
 
@@ -22,6 +21,8 @@ Windows interface and adds priority-array and relinquish-default snapshot compar
 - Inspect properties, edit supported values, and read changes back from the device.
 - Work with command priorities, schedules, calendars, watches, trends and exports.
 - Cancel a search, select a different target, disconnect, or close during discovery.
+- On Windows, Disconnect returns to Devices with the last results visible offline.
+  Choose Connect and discover to reconnect and start a fresh scan.
 - Save workspaces and compare device snapshots, including individual priority
   slots and relinquish defaults. See the [priority baseline guide](docs/PRIORITY_BASELINES.md).
 
@@ -33,9 +34,8 @@ networks and equipment you are authorized to access; confirm the target before w
 
 ## macOS: untested desktop preview
 
-Full desktop application bundles are available for
-[Apple Silicon](https://github.com/cplymill/go-bacnet-workbench/releases/download/v0.2.21/GoBACnetWorkbench-0.2.21-osx-arm64-UNTESTED.zip)
-and [Intel](https://github.com/cplymill/go-bacnet-workbench/releases/download/v0.2.21/GoBACnetWorkbench-0.2.21-osx-x64-UNTESTED.zip).
+Full desktop application bundles for Apple Silicon and Intel are available from
+the [latest release](https://github.com/cplymill/go-bacnet-workbench/releases/latest).
 They include the runtime and compiled engine. Extract the archive and copy the
 application to Applications; see the included preview instructions.
 

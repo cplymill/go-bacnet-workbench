@@ -1,16 +1,15 @@
 # Go BACnet Workbench — product specification
 
-**Version covered:** 0.2.21
+**Version covered:** 0.2.22
 
-**Reviewed:** November 23, 2026
+**Reviewed:** November 25, 2026
 
 **Primary application:** Windows x64 desktop
 
 **Additional distribution:** untested macOS desktop preview, Apple Silicon and Intel
 
-This specification describes implemented application behavior in the published
-0.2.21 source and release packages. It separates available controls from tested
-platform behavior. A remote device must support and authorize a requested service
+This specification describes application behavior in the 0.2.22 source.
+It separates available controls from tested platform behavior. A remote device must support and authorize a requested service
 for that operation to succeed. This document is not a BTL certification, PICS,
 claim of universal device compatibility, or specification of every capability in
 the separately licensed Go BACnet Stack.
@@ -59,9 +58,9 @@ router and BBMD information does not turn the application into those devices.
 
 | Distribution | Package | Status |
 | --- | --- | --- |
-| Windows x64 | `GoBACnetWorkbench-0.2.21-x64.msi` | Primary release; automated desktop/engine checks and installer payload verification passed |
-| macOS Apple Silicon | `GoBACnetWorkbench-0.2.21-osx-arm64-UNTESTED.zip` | Complete desktop app bundle; not run on Mac hardware |
-| macOS Intel | `GoBACnetWorkbench-0.2.21-osx-x64-UNTESTED.zip` | Complete desktop app bundle; not run on Mac hardware |
+| Windows x64 | `GoBACnetWorkbench-0.2.22-x64.msi` | Primary Windows release |
+| macOS Apple Silicon | `GoBACnetWorkbench-0.2.22-osx-arm64-UNTESTED.zip` | Complete desktop app bundle; not run on Mac hardware |
+| macOS Intel | `GoBACnetWorkbench-0.2.22-osx-x64-UNTESTED.zip` | Complete desktop app bundle; not run on Mac hardware |
 
 The Windows installer includes the .NET runtime and compiled engine, installs
 per user under the user's local Programs directory, adds a Start Menu shortcut,
@@ -75,9 +74,9 @@ license notices and preview instructions in an `.app` distribution. The bundle
 declares macOS 14 as its minimum version; this is a packaging target, not a tested
 compatibility result. The Mac packages are unsigned and not notarized. macOS may
 block opening them. No Windows ARM, Linux package, Mac installer, automatic
-updater or Mac hardware qualification is claimed for 0.2.21.
+updater or Mac hardware qualification is claimed for 0.2.22.
 
-The published [release](https://github.com/cplymill/go-bacnet-workbench/releases/tag/v0.2.21)
+The published [release](https://github.com/cplymill/go-bacnet-workbench/releases/latest)
 includes SHA-256 checksums for the three application downloads.
 
 ## 3. Connections and transports
@@ -127,8 +126,11 @@ behavior remain untested on Mac hardware.
 - Duplicate device instances retain separate address-qualified bindings rather
   than being merged into one target.
 - Windows groups discovered routed devices under routers. Selecting a device
-  focuses the left pane on its objects; All devices returns to the discovery
-  list. The Mac preview uses a device list with address/route details.
+  focuses the left pane on its objects. All devices returns to the live discovery
+  list without disconnecting. Disconnect returns there with the last results
+  marked offline and reopens connection settings. Connect and discover opens
+  the selected connection and replaces the previous list with a fresh scan.
+  The Mac preview uses a device list with address/route details.
 - Object inventory arrives in pages, then names, present values and units are
   enriched. Search updates as names and values arrive. Windows additionally
   provides type-group filters, including analog, binary, schedules, calendars,
@@ -534,8 +536,10 @@ many operations require a live discovered device binding and confirmation.
 The [0.2.21 release evidence](releases/0.2.21.json) records new Windows/shared
 snapshot checks, production-engine IPC checks and Windows MSI payload verification.
 Adapter tests/vet evidence is reused from the unchanged 0.2.20 engine.
-Focused fixture checks cover search replacement/cancel,
-bounded cleanup, draft preservation, write/readback behavior, progressive
+Windows 0.2.22 fixture checks cover disconnecting from a focused device,
+showing previous results offline, and reconnecting from the Devices view.
+Other fixture checks cover search replacement, cancellation, bounded cleanup,
+draft preservation, write/readback behavior, progressive
 inventory, polling/COV coordination and IPC resource behavior. Public GitHub CI
 also builds and runs the Windows desktop and cross-platform headless checks.
 
