@@ -2,8 +2,8 @@
 
 Read and follow [CONTRIBUTING.md](CONTRIBUTING.md) before any changes. It is the
 authoritative Git workflow for this repository. Use a short-lived `codex/` branch,
-small conventional commits and a reviewed PR. Never push directly to `main`,
-bypass required review/checks or move/delete published release tags.
+small conventional commits and an owner-approved PR. Never push directly to
+`main`, bypass required checks or move/delete published release tags.
 
 This repository owns the desktop interfaces, stdio adapter, tests and packaging
 definitions. The Go BACnet Stack implementation is a separate proprietary

@@ -22,18 +22,23 @@ enforce the checks; Markdown alone cannot protect a branch.
 5. Keep the branch current by rebasing onto `origin/main`. Coordinate before
    rewriting a shared branch; use `--force-with-lease`, never an unqualified force
    push. Never rewrite `main` or a published tag.
-6. Merge through GitHub using squash merge after required checks and an
-   independent approval. The squash subject comes from the conventional PR title.
+6. Merge through GitHub using squash merge after required checks and approval
+   from the repository owner. The squash subject comes from the conventional PR
+   title.
 7. Delete merged branches promptly. GitHub deletes merged remote heads
    automatically; fetch with pruning and remove merged local branches yourself.
 
-`main` requires current passing **Repository policy** and **Windows application
-checks**, one approval, resolution of conversations and approval after the last
-push. Stale approvals are dismissed. Administrators are subject to protection;
-force pushes and branch deletion are forbidden. Squash-only merging keeps main
-linear. A PR author cannot approve their own PR: an independent reviewer with
-the appropriate repository access is required. Do not lower protection or add a
-bypass merely to merge an agent-authored change.
+`main` requires an up-to-date pull request, passing **Repository policy** and
+**Windows application checks**, and resolved conversations. GitHub limits
+merges to the `cplymill` account. The owner can merge directly through the pull
+request or explicitly authorize Codex to merge on the owner's behalf after
+reviewing the changes. Approval applies to the reviewed changes, so ask the
+owner again if the proposed changes change after approval. A push request from
+the owner authorizes the scoped commit and merge once the checks pass.
+
+Administrators are subject to the same pull request and CI protections.
+Force pushes and branch deletion are forbidden. Squash-only merging keeps
+`main` linear.
 
 ## Local setup and checks
 
@@ -119,5 +124,5 @@ Signing is currently optional; readable, reviewed linear history is mandatory.
 repository, main-branch and release-tag settings. GitHub stores and enforces the
 live settings independently; committing this file does not apply them. An
 authorized maintainer must apply changes through GitHub and verify the result.
-Policy/configuration changes follow the same reviewed PR process. Do not silently
+Policy/configuration changes follow the same owner-approved PR process. Do not silently
 weaken checks to obtain a green build.
