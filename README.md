@@ -86,6 +86,10 @@ use the official compiled engine.
 
 ## Validation
 
+Contributors and coding agents must follow the
+[contribution and Git workflow](CONTRIBUTING.md). It covers branches, reviewed PRs,
+local hooks, CI, release tags, signing and the private-engine boundary.
+
 ```powershell
 dotnet run --project desktop/checks/DesktopChecks.csproj -c Release
 dotnet run --project desktop/CrossPlatform.Checks/Workbench.CrossPlatform.Checks.csproj -c Release

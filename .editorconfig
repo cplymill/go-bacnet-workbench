@@ -1,0 +1,25 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 4
+
+[*.{yml,yaml,json,xml,xaml,csproj,props,targets}]
+indent_size = 2
+
+[*.go]
+indent_style = tab
+
+[*.md]
+trim_trailing_whitespace = false
+
+[*.cs]
+csharp_new_line_before_open_brace = all
+csharp_indent_case_contents = true
+csharp_indent_switch_labels = true
+csharp_preserve_single_line_statements = false
+csharp_preserve_single_line_blocks = false
