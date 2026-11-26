@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <AssemblyName>GoBACnetWorkbench</AssemblyName>
-    <Version>0.2.21</Version>
+    <Version>0.2.22</Version>
     <AvaloniaVersion>12.1.2</AvaloniaVersion>
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
   </PropertyGroup>

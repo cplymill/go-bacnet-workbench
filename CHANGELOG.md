@@ -8,6 +8,13 @@ are in `docs/`; installation downloads are on GitHub Releases.
 - Establish a documented branch/PR workflow, conventional subjects, local hooks,
   formatting/file/secret guards, protected main and immutable release tags.
 
+## [0.2.22] - 2026-11-25
+
+- Windows returns to Devices on disconnect and shows the last discovery results
+  as offline. Connect and discover reconnects and starts a fresh scan.
+- Offline Windows checks cover returning to the live device list, disconnecting
+  from a device, and reconnecting from the Devices view.
+
 ## [0.2.21] - 2026-11-23
 
 - Save priority arrays and relinquish defaults in commissioning baselines.
