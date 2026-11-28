@@ -17,7 +17,7 @@ public partial class MainWindow
         var id = ManagementObject.Text.Trim();
         var allocate = AllocateInstance.IsChecked == true;
         var type = Integer(CreationType, 0, 1023);
-        if (!ConfirmAction("Create object", $"{(allocate ? $"Allocate an instance of type {type}" : $"Create {id}")}\nInitial properties:\n{InitialProperties.Text}"))
+        if (!ConfirmAction("Create object", $"{(allocate ? $"Allocate an instance of {BacnetDisplay.ChoiceValue("object-type", type.ToString(System.Globalization.CultureInfo.InvariantCulture))}" : $"Create {BacnetDisplay.ObjectReference(id)}")}\nInitial properties:\n{InitialProperties.Text}"))
             return;
         var result = await Engine.Call("create-object", new
         {
@@ -116,7 +116,7 @@ public partial class MainWindow
     private async void InspectBbmd(object sender, RoutedEventArgs e) => await Run("Inspect BBMD", async () => Diagnostics.Text = Pretty(await Engine.Call("bbmd", new { target = Bbmd.Text.Trim().Length > 0 ? Bbmd.Text.Trim() : DiscoveryTarget.Text.Trim() })));
     private async void ReadTraffic(object sender, RoutedEventArgs e) => await Run("Received APDU metadata", async () => Diagnostics.Text = Pretty(await Engine.Call("traffic")));
     private async void SaveDiagnostics(object sender, RoutedEventArgs e) => await Run("Save diagnostics", () => { var path = SavePath("diagnostics.json", "JSON|*.json"); if (path != null) SaveAtomic(path, Diagnostics.Text); return Task.CompletedTask; });
-    private static string Pretty(JsonElement result) => JsonSerializer.Serialize(WorkbenchExport.PropertyResult(result), WorkbenchExport.CamelCase);
+    private static string Pretty(JsonElement result) => JsonSerializer.Serialize(WorkbenchExport.Diagnostic(result), WorkbenchExport.CamelCase);
 
     private async void AcknowledgeEvent(object sender, RoutedEventArgs e) => await Run("Acknowledge alarm", async () =>
     {

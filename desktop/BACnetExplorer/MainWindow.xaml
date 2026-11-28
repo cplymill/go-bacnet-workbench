@@ -190,7 +190,7 @@
             <TreeView MinHeight="180" x:Name="DeviceList" SelectedItemChanged="DeviceTreeSelected" VirtualizingStackPanel.IsVirtualizing="True" VirtualizingStackPanel.VirtualizationMode="Recycling" ScrollViewer.CanContentScroll="True">
               <TreeView.Resources>
                 <HierarchicalDataTemplate DataType="{x:Type local:Peer}" ItemsSource="{Binding DeviceChildren}">
-                  <StackPanel Orientation="Horizontal">
+                  <StackPanel Orientation="Horizontal" ToolTip="{Binding Warning}">
                     <TextBlock Text="▣ " Foreground="#117D85" />
                     <TextBlock Text="{Binding Caption}" />
                     <TextBlock Text=" — " />
@@ -529,7 +529,7 @@
                 <DataGridTextColumn Header="Time" Binding="{Binding Time}" Width="100" />
                 <DataGridTextColumn Header="Operation" Binding="{Binding Operation}" Width="150" />
                 <DataGridTextColumn Header="Target" Binding="{Binding Target}" Width="220" />
-                <DataGridTextColumn Header="Result" Binding="{Binding Result}" Width="*" />
+                <DataGridTextColumn Header="Result" Binding="{Binding DisplayResult}" Width="*" />
               </DataGrid.Columns>
             </DataGrid>
           </DockPanel>

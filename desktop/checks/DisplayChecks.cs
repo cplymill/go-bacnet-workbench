@@ -71,6 +71,14 @@ internal static class DisplayChecks
         watch.Observe(reliability, "Poll");
         Check(watch.Value == reliability.DisplayValue && watch.Samples[0].Value == reliability.Value,
             "Watch labels replaced stored values.");
+        using var traffic = JsonDocument.Parse("""[{"sourceNetwork":0,"sourceMAC":"ff","type":"1","bytes":4}]""");
+        Check(WorkbenchExport.Diagnostic(traffic.RootElement)![0]!["displayType"]!.GetValue<string>() == "Unconfirmed request (1)", "APDU report lost its type name.");
+        using var range = JsonDocument.Parse("""{"count":1,"firstSequence":1,"raw":"00","flags":{"FirstItem":true,"LastItem":false,"MoreItems":true}}""");
+        Check(WorkbenchExport.Diagnostic(range.RootElement)!["displayFlags"]!.GetValue<string>() == "Includes first item · More items available", "ReadRange flags are unclear.");
+        Check(new ActivityRow("", "", "", "remote BACnet Reject reason 9 (invoke 3)").DisplayResult.Contains("Unrecognized service (9)", StringComparison.Ordinal),
+            "Activity did not name a rejection.");
+        Check(new CalendarRule { Kind = "week", Month = "2", Week = "6", Weekday = "Mon" }.Summary == "February (2) · Last 7 days (6) · Monday", "Calendar rule uses numeric codes alone.");
+        Check(new ScheduleEntry { Type = "enumerated", Value = "7" }.Label == "Choice 7", "Unknown schedule choice is unlabeled.");
         Console.WriteLine("PASS: BACnet labels resolve known values, flags and errors while preserving raw values in editors and saved/exported files.");
     }
 

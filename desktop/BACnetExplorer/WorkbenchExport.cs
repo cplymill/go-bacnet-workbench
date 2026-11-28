@@ -31,6 +31,8 @@ internal static class WorkbenchExport
                 Add<Watch>(type, "DisplayProperty", row => BacnetDisplay.PropertyName(row.Property));
                 Add<Watch>(type, "ObjectDescription", row => BacnetDisplay.ObjectReference(row.Object));
             }
+            else if (type.Type == typeof(ActivityRow))
+                Add<ActivityRow>(type, nameof(ActivityRow.DisplayResult), row => row.DisplayResult);
             else if (type.Type == typeof(Difference))
             {
                 Add<Difference>(type, "DisplayProperty", row => Selector(row.Property));
@@ -84,6 +86,45 @@ internal static class WorkbenchExport
                 throw new InvalidDataException("Saved document exceeds 16 MiB.");
         }
         return text;
+    }
+
+    internal static JsonNode? Diagnostic(JsonElement result)
+    {
+        var root = PropertyResult(result);
+        if (root is JsonArray entries)
+        {
+            foreach (var entry in entries.OfType<JsonObject>())
+            {
+                if (entry.ContainsKey("sourceNetwork") && entry.ContainsKey("sourceMAC") &&
+                    entry["type"] is JsonValue type && type.TryGetValue<string>(out var text))
+                    entry["displayType"] = BacnetDisplay.ChoiceValue("apdu-type", text);
+                if (entry.ContainsKey("acknowledged") && entry.ContainsKey("priorities") && entry.ContainsKey("timestamps"))
+                {
+                    var row = entry.Deserialize<EventRow>(EngineClient.Json);
+                    if (row != null)
+                    {
+                        entry["displayState"] = row.DisplayState;
+                        entry["displayNotifyType"] = row.DisplayNotifyType;
+                        entry["displayAcknowledged"] = row.DisplayAcknowledged;
+                        entry["displayPriorities"] = row.PriorityDisplay;
+                    }
+                }
+            }
+        }
+        if (root is JsonObject range && range.ContainsKey("firstSequence") && range.ContainsKey("raw") &&
+            range["flags"] is JsonObject flags)
+        {
+            var meanings = new Dictionary<string, string>
+            {
+                ["FirstItem"] = "Includes first item",
+                ["LastItem"] = "Includes last item",
+                ["MoreItems"] = "More items available"
+            };
+            var active = meanings.Where(pair => flags[pair.Key] is JsonValue bit && bit.TryGetValue<bool>(out var set) && set)
+                .Select(pair => pair.Value).ToArray();
+            range["displayFlags"] = active.Length == 0 ? "No result flags set" : string.Join(" · ", active);
+        }
+        return root;
     }
 
     internal static JsonNode? PropertyResult(JsonElement result)

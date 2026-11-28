@@ -78,7 +78,7 @@ public sealed partial class WorkbenchWindow
             }));
             foreach (var watch in group)
                 watch.Observe(result.FirstOrDefault(row => row.Identity == watch.Identity)
-                ?? new PropertyRow { At = DateTimeOffset.UtcNow, Error = "No result returned for this watch." }, "Poll");
+                ?? new PropertyRow { At = DateTimeOffset.UtcNow, Error = "No result returned for this watch." }, "Poll", properties);
         }
         chart.InvalidateVisual();
     }
@@ -120,7 +120,7 @@ public sealed partial class WorkbenchWindow
                     var process = item.GetProperty("process").GetUInt32();
                     foreach (var row in Rows(item.GetProperty("rows")))
                         foreach (var watch in subscriptions.Where(watch => watch.Process == process && watch.Identity == row.Identity))
-                            watch.Observe(row, "COV");
+                            watch.Observe(row, "COV", properties);
                 }
             }
             if (due && !busy && !closing)

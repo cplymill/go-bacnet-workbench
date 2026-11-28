@@ -12,6 +12,7 @@ internal static class BacnetDisplay
 {
     private const string Enumerated = "enumerated:";
     private static readonly Lazy<Dictionary<string, Dictionary<ulong, string>>> Catalog = new(LoadCatalog);
+    private static readonly Regex ProtocolReason = new(@"BACnet (?<kind>Reject|Abort) reason (?<code>\d+)", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
     private static readonly Regex ProtocolError = new(@"BACnet error class (?<class>\d+), code (?<code>\d+)", RegexOptions.CultureInvariant);
     private static readonly string[] Weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
     private static readonly Dictionary<string, string[]> FlagNames = new(StringComparer.Ordinal)
@@ -58,13 +59,17 @@ internal static class BacnetDisplay
         return $"{Label("object-type", type) ?? $"Object type {type}"} {instance} ({value})";
     }
 
-    internal static string Error(string error) => ProtocolError.Replace(error, match =>
+    internal static string Error(string error) => ProtocolReason.Replace(ProtocolError.Replace(error, match =>
     {
         if (!Number(match.Groups["class"].Value, out var category) || !Number(match.Groups["code"].Value, out var code))
             return match.Value;
         var reason = Label("error-code", code) ?? "Unknown error";
         var group = Label("error-class", category) ?? "Unknown error class";
         return $"{reason} (code {code}, {group} class {category})";
+    }), match =>
+    {
+        var kind = match.Groups["kind"].Value;
+        return $"BACnet {kind}: {ChoiceValue(kind.ToLowerInvariant() + "-reason", match.Groups["code"].Value)}";
     });
 
     internal static string ChoiceValue(string domain, string value) => Number(value, out var number)
@@ -87,7 +92,23 @@ internal static class BacnetDisplay
         }
         if (row.Property == "object-identifier" && row.Type == "object-identifier")
             return (PropertyValueEditor.IsDevice(row) ? "Device " : "Instance ") + row.Value.Split(':').Last();
-        return Scalar(row, row.Value, row.Type, context, row.EditorValue);
+        var text = Scalar(row, row.Value, row.Type, context, row.EditorValue);
+        if (row.Property is "present-value" or "relinquish-default" &&
+            Text(context, "units") is { } unit)
+            return WithUnit(text, unit);
+        return text;
+    }
+
+    internal static string WithUnit(string value, string unit)
+    {
+        if (unit.Length == 0 || unit is "no-units" or "No units" ||
+            unit.StartsWith("No units (", StringComparison.OrdinalIgnoreCase) ||
+            unit.StartsWith("Unknown ", StringComparison.Ordinal) || unit == "Structured data" ||
+            !double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var number) ||
+            !double.IsFinite(number))
+            return value;
+        var label = Number(unit, out var code) ? Label("units", code) : Humanize(unit);
+        return label == null ? value : $"{value} · {label}";
     }
 
     internal static string Priority(PropertyRow row, int index, IEnumerable<PropertyRow>? context = null)

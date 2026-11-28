@@ -94,8 +94,10 @@ public sealed class Peer : INotifyPropertyChanged
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Warning)));
     }
     public string Caption => (Router ? "Router · " : "") + (Name.Length > 0 ? $"{Name} [{Instance}]" : $"Device {Instance}") + (Router ? $" [networks {string.Join(", ", Networks)}]" : "");
-    public string Detail => $"{Address}  ·  Vendor {Vendor}";
-    public string Warning => Duplicate ? "Duplicate instance — address selected explicitly" : $"APDU {MaxApdu}  ·  Route {Route}";
+    public string Detail => $"{Address} · Vendor ID {Vendor}";
+    public string Warning => Duplicate ? "Duplicate instance — address selected explicitly" :
+        $"Max APDU {MaxApdu} bytes · Route {Route}" +
+        (Segmentation.Length > 0 ? $" · {BacnetDisplay.ChoiceValue("segmentation-supported", Segmentation)}" : "");
 }
 
 public class PropertyRow
@@ -201,8 +203,20 @@ public sealed class ObjectRow : INotifyPropertyChanged
         }
     }
     public string DisplayValue => Value.Length == 0 ? "" :
-        BacnetDisplay.Value(new PropertyRow { Object = Object, Property = "present-value", Value = Value });
-    public string Units { get; set; } = "";
+        BacnetDisplay.WithUnit(BacnetDisplay.Value(new PropertyRow { Object = Object, Property = "present-value", Value = Value }), Units);
+    private string units = "";
+    public string Units
+    {
+        get => units;
+        set
+        {
+            if (units == value)
+                return;
+            units = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Units)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DisplayValue)));
+        }
+    }
     public string Caption => $"{ObjectLabel}  {Kind}" + (Name.Length > 0 ? $" · {Name}" : "");
 }
 
@@ -232,13 +246,15 @@ public sealed class Watch : INotifyPropertyChanged
     public List<Sample> Samples { get; } = [];
     public string Identity => $"{Device}|{Object}|{Property}|{Index}";
     public event PropertyChangedEventHandler? PropertyChanged;
-    public void Observe(PropertyRow row, string source)
+    public void Observe(PropertyRow row, string source, IEnumerable<PropertyRow>? context = null)
     {
-        Value = row.Error.Length > 0 ? row.DisplayError : row.DisplayValue;
+        var display = context == null ? row.DisplayValue : BacnetDisplay.Value(row,
+            context.Where(item => item.Device == row.Device && item.Object == row.Object));
+        Value = row.Error.Length > 0 ? row.DisplayError : display;
         Quality = row.Error.Length > 0 ? "Error" : source;
         Updated = row.At.ToLocalTime().ToString("HH:mm:ss", CultureInfo.InvariantCulture);
         double? number = double.TryParse(row.Value, NumberStyles.Float, CultureInfo.InvariantCulture, out var value) && double.IsFinite(value) && row.Error.Length == 0 ? value : null;
-        Samples.Add(new Sample(row.At, number, row.Value, row.Error, source) { DisplayValue = row.DisplayValue });
+        Samples.Add(new Sample(row.At, number, row.Value, row.Error, source) { DisplayValue = display });
         if (Samples.Count > 1000)
             Samples.RemoveAt(0);
         Notify(nameof(Value));
@@ -269,7 +285,11 @@ public sealed record Sample(DateTimeOffset At, double? Number, string Value, str
     [System.Text.Json.Serialization.JsonIgnore]
     public string DisplayError => BacnetDisplay.Error(Error);
 }
-public sealed record ActivityRow(string Time, string Operation, string Target, string Result);
+public sealed record ActivityRow(string Time, string Operation, string Target, string Result)
+{
+    [System.Text.Json.Serialization.JsonIgnore]
+    public string DisplayResult => BacnetDisplay.Error(Result);
+}
 public sealed record Difference(string Object, string Property, string Before, string After, string Change)
 {
     public string ObjectLabel => ObjectLabels.Display(Object);

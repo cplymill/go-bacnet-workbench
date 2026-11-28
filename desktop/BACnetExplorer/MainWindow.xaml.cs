@@ -1145,7 +1145,7 @@ public partial class MainWindow : Window
                 foreach (var watch in group)
                 {
                     var row = rows.FirstOrDefault(r => r.Identity == watch.Identity);
-                    watch.Observe(row ?? new PropertyRow { At = DateTimeOffset.UtcNow, Error = "No result returned for this watch." }, "Poll");
+                    watch.Observe(row ?? new PropertyRow { At = DateTimeOffset.UtcNow, Error = "No result returned for this watch." }, "Poll", properties);
                     sampled = true;
                 }
             }
@@ -1224,7 +1224,7 @@ public partial class MainWindow : Window
                     foreach (var row in Decode<List<PropertyRow>>(item.GetProperty("rows")))
                         foreach (var watch in subscriptions.Where(w => w.Process == process && w.Identity == row.Identity))
                         {
-                            watch.Observe(row, "COV");
+                            watch.Observe(row, "COV", properties);
                             sampled = true;
                         }
                 }
@@ -1328,7 +1328,7 @@ public partial class MainWindow : Window
             start = (ulong)Integer(RangeStart, 1, int.MaxValue),
             count = Integer(RangeCount, 1, 256)
         });
-        Diagnostics.Text = JsonSerializer.Serialize(result, new JsonSerializerOptions { WriteIndented = true });
+        Diagnostics.Text = Pretty(result);
     });
 
     private void Log(string operation, string target, string result)
@@ -1468,7 +1468,7 @@ public partial class MainWindow : Window
         SaveAtomic(path, string.Join("\r\n", rows.Select(row => string.Join(",", row.Select(CsvCell)))) + "\r\n");
     }
     private async void ExportProperties(object sender, RoutedEventArgs e) => await Run("Export properties", () => { ExportCsv("properties.csv", new[] { new object?[] { "Device", "Object", "Property", "Index", "Value", "Type", "Error", "Raw", "Observed UTC", "Readable value", "Readable error", "Object description", "Property name" } }.Concat(properties.Select(r => new object?[] { r.Device, r.Object, r.Property, r.Index, r.Value, r.Type, r.Error, r.Raw, r.At.ToString("O"), r.DisplayValue, r.DisplayError, BacnetDisplay.ObjectReference(r.Object), r.DisplayName }))); return Task.CompletedTask; });
-    private async void ExportActivity(object sender, RoutedEventArgs e) => await Run("Export activity", () => { ExportCsv("activity.csv", new[] { new object?[] { "Time", "Operation", "Target", "Result" } }.Concat(activity.Select(r => new object?[] { r.Time, r.Operation, r.Target, r.Result }))); return Task.CompletedTask; });
+    private async void ExportActivity(object sender, RoutedEventArgs e) => await Run("Export activity", () => { ExportCsv("activity.csv", new[] { new object?[] { "Time", "Operation", "Target", "Result", "Readable result" } }.Concat(activity.Select(r => new object?[] { r.Time, r.Operation, r.Target, r.Result, r.DisplayResult }))); return Task.CompletedTask; });
     private async void ExportDifferences(object sender, RoutedEventArgs e) => await Run("Export differences", () => { ExportCsv("differences.csv", new[] { new object?[] { "Object", "Property", "Baseline", "Live", "Change", "Readable baseline", "Readable live", "Object description", "Property name" } }.Concat(differences.Select(r => new object?[] { r.Object, r.Property, r.RawBefore, r.RawAfter, r.Change, r.Before, r.After, BacnetDisplay.ObjectReference(r.Object), WorkbenchExport.Selector(r.Property) }))); return Task.CompletedTask; });
     private async void ExportHistory(object sender, RoutedEventArgs e) => await Run("Export history", () => { ExportCsv("watch-history.csv", new[] { new object?[] { "Device", "Object", "Property", "Index", "UTC", "Value", "Error", "Source", "Readable value", "Readable error", "Object description", "Property name" } }.Concat(watches.SelectMany(w => w.Samples.Select(s => new object?[] { w.Device, w.Object, w.Property, w.Index, s.At.ToString("O"), s.Value, s.Error, s.Source, s.DisplayValue, s.DisplayError, BacnetDisplay.ObjectReference(w.Object), BacnetDisplay.PropertyName(w.Property) })))); return Task.CompletedTask; });
 

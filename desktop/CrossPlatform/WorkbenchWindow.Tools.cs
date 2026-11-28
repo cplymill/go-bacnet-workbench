@@ -115,14 +115,17 @@ public sealed partial class WorkbenchWindow
         if (initial.RootElement.ValueKind != JsonValueKind.Array || initial.RootElement.GetArrayLength() > 64)
             throw new InvalidDataException("Use up to 64 initial values.");
         var id = ObjectLabels.Numeric(managementObject.Text ?? "");
-        if (!await ConfirmTarget("Create object", $"Create {id}; allocate instance: {allocateInstance.IsChecked == true}."))
+        var allocate = allocateInstance.IsChecked == true;
+        var type = Number(creationType, 0, 1023);
+        var label = allocate ? BacnetDisplay.ChoiceValue("object-type", type.ToString(System.Globalization.CultureInfo.InvariantCulture)) : BacnetDisplay.ObjectReference(id);
+        if (!await ConfirmTarget("Create object", allocate ? $"Allocate an instance of {label}." : $"Create {label}."))
             return;
         output.Text = Pretty(await Engine.Call("create-object", new
         {
             device = CurrentPeer.Key,
             @object = id,
-            objectType = Number(creationType, 0, 1023),
-            allocateInstance = allocateInstance.IsChecked == true,
+            objectType = type,
+            allocateInstance = allocate,
             initialValues = initial.RootElement,
             confirmed = true
         }));

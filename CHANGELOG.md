@@ -13,6 +13,8 @@ are in `docs/`; installation downloads are on GitHub Releases.
 - Show readable BACnet choices, bit flags, object types, priorities and errors.
 - Add readable labels to CSV and JSON exports and saved observations while
   retaining numeric selectors, raw observations and workspace compatibility.
+- Label APDU types, range flags, device segmentation, and schedule and calendar
+  selections. Keep actual readings, addresses, indexes and raw values intact.
 - Carry forward the Windows disconnect and discovery recovery in 0.2.22.
 
 ## [0.2.22] - 2026-11-25

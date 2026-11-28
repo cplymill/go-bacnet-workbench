@@ -239,7 +239,7 @@ public sealed partial class WorkbenchWindow : Window
 
     private Control Activity()
     {
-        var grid = Table(("Time", "Time"), ("Operation", "Operation"), ("Target", "Target"), ("Result", "Result"));
+        var grid = Table(("Time", "Time"), ("Operation", "Operation"), ("Target", "Target"), ("Result", "DisplayResult"));
         grid.ItemsSource = activity;
         return Page(Button("Export activity", () => ExportJson("activity.json", activity)), grid);
     }
@@ -335,7 +335,7 @@ public sealed partial class WorkbenchWindow : Window
         return table;
     }
     private static string Pretty(object data) =>
-        JsonSerializer.Serialize(data is JsonElement result ? WorkbenchExport.PropertyResult(result) : data, HumanJson);
+        JsonSerializer.Serialize(data is JsonElement result ? WorkbenchExport.Diagnostic(result) : data, HumanJson);
     private static T Decode<T>(JsonElement json) => json.Deserialize<T>(EngineClient.Json) ?? throw new InvalidDataException("Empty engine response.");
     private static List<PropertyRow> Rows(JsonElement json) => json.ValueKind == JsonValueKind.Array
         ? Decode<List<PropertyRow>>(json)
@@ -589,6 +589,7 @@ public sealed partial class WorkbenchWindow : Window
                 {
                     row.Name = fields.FirstOrDefault(item => item.Property == "object-name")?.DisplayValue ?? row.Name;
                     row.Value = fields.FirstOrDefault(item => item.Property == "present-value")?.Result ?? row.Value;
+                    row.Units = fields.FirstOrDefault(item => item.Property == "units" && item.Error.Length == 0)?.Value ?? row.Units;
                 }
         }
         allObjects.Clear();

@@ -22,6 +22,7 @@
           <ComboBox x:Name="TransitionDay" DockPanel.Dock="Top" Width="180" HorizontalAlignment="Left" SelectionChanged="ChangeTransitionDay" />
           <DataGrid x:Name="Transitions" IsReadOnly="False" CanUserAddRows="False" BeginningEdit="BeginTransitionEdit" CellEditEnding="TransitionEdited"><DataGrid.Columns>
             <DataGridTextColumn Header="Time" Binding="{Binding Time}" Width="150" /><DataGridTextColumn Header="Type" Binding="{Binding Type}" IsReadOnly="True" Width="170" /><DataGridTextColumn Header="Value" Binding="{Binding Value}" Width="*" />
+            <DataGridTextColumn Header="Meaning" Binding="{Binding Label}" IsReadOnly="True" Width="*" />
           </DataGrid.Columns></DataGrid>
         </DockPanel>
       </TabItem>
@@ -42,6 +43,7 @@
           </StackPanel>
           <DataGrid Grid.Row="3" x:Name="ExceptionTimes" IsReadOnly="False" CanUserAddRows="False" SelectionMode="Extended" BeginningEdit="BeginTransitionEdit" CellEditEnding="TransitionEdited"><DataGrid.Columns>
             <DataGridTextColumn Header="Time" Binding="{Binding Time}" Width="150" /><DataGridTextColumn Header="Type" Binding="{Binding Type}" IsReadOnly="True" Width="170" /><DataGridTextColumn Header="Value" Binding="{Binding Value}" Width="*" />
+            <DataGridTextColumn Header="Meaning" Binding="{Binding Label}" IsReadOnly="True" Width="*" />
           </DataGrid.Columns></DataGrid>
         </Grid>
       </TabItem>

@@ -1,4 +1,19 @@
 {
+  "abort-reason": {
+    "0": "Other",
+    "1": "Buffer overflow",
+    "2": "Invalid APDU in this state",
+    "3": "Preempted by higher-priority task",
+    "4": "Segmentation not supported",
+    "5": "Security error",
+    "6": "Insufficient security",
+    "7": "Window size out of range",
+    "8": "Application exceeded reply time",
+    "9": "Out of resources",
+    "10": "Transaction timed out",
+    "11": "APDU too long",
+    "12": "Inconsistent attributes"
+  },
   "access-event": {
     "0": "None",
     "1": "Granted",
@@ -54,6 +69,16 @@
     "162": "Denied Verification Failed",
     "163": "Denied Verification Timeout",
     "164": "Denied Other"
+  },
+  "apdu-type": {
+    "0": "Confirmed request",
+    "1": "Unconfirmed request",
+    "2": "Simple acknowledgment",
+    "3": "Complex acknowledgment",
+    "4": "Segment acknowledgment",
+    "5": "Error",
+    "6": "Reject",
+    "7": "Abort"
   },
   "audit-level": {
     "0": "None",
@@ -1204,6 +1229,19 @@
     "3": "Program",
     "4": "Other"
   },
+  "reject-reason": {
+    "0": "Other",
+    "1": "Buffer overflow",
+    "2": "Inconsistent parameters",
+    "3": "Invalid parameter datatype",
+    "4": "Invalid tag",
+    "5": "Missing required parameter",
+    "6": "Parameter out of range",
+    "7": "Too many arguments",
+    "8": "Undefined enumeration",
+    "9": "Unrecognized service",
+    "10": "Invalid data encoding"
+  },
   "reliability": {
     "0": "No Fault Detected",
     "1": "No Sensor",
@@ -1248,10 +1286,10 @@
     "2": "Unknown"
   },
   "segmentation-supported": {
-    "0": "Both",
-    "1": "Transmit",
-    "2": "Receive",
-    "3": "None"
+    "0": "Transmit and receive segments",
+    "1": "Transmit segments only",
+    "2": "Receive segments only",
+    "3": "No segmentation"
   },
   "service-supported": {
     "0": "acknowledge-alarm",
