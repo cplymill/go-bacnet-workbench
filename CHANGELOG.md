@@ -8,6 +8,13 @@ are in `docs/`; installation downloads are on GitHub Releases.
 - Establish a documented branch/PR workflow, conventional subjects, local hooks,
   formatting/file/secret guards, protected main and immutable release tags.
 
+## [0.2.23] - 2026-11-28
+
+- Show readable BACnet choices, bit flags, object types, priorities and errors.
+- Add readable labels to CSV and JSON exports and saved observations while
+  retaining numeric selectors, raw observations and workspace compatibility.
+- Carry forward the Windows disconnect and discovery recovery in 0.2.22.
+
 ## [0.2.22] - 2026-11-25
 
 - Windows returns to Devices on disconnect and shows the last discovery results

@@ -1,14 +1,14 @@
 # Go BACnet Workbench — product specification
 
-**Version covered:** 0.2.22
+**Version covered:** 0.2.23
 
-**Reviewed:** November 25, 2026
+**Reviewed:** November 28, 2026
 
 **Primary application:** Windows x64 desktop
 
 **Additional distribution:** untested macOS desktop preview, Apple Silicon and Intel
 
-This specification describes application behavior in the 0.2.22 source.
+This specification describes application behavior in the 0.2.23 source.
 It separates available controls from tested platform behavior. A remote device must support and authorize a requested service
 for that operation to succeed. This document is not a BTL certification, PICS,
 claim of universal device compatibility, or specification of every capability in
@@ -58,9 +58,15 @@ router and BBMD information does not turn the application into those devices.
 
 | Distribution | Package | Status |
 | --- | --- | --- |
-| Windows x64 | `GoBACnetWorkbench-0.2.22-x64.msi` | Primary Windows release |
-| macOS Apple Silicon | `GoBACnetWorkbench-0.2.22-osx-arm64-UNTESTED.zip` | Complete desktop app bundle; not run on Mac hardware |
-| macOS Intel | `GoBACnetWorkbench-0.2.22-osx-x64-UNTESTED.zip` | Complete desktop app bundle; not run on Mac hardware |
+| Windows x64 | `GoBACnetWorkbench-0.2.23-x64.msi` | Primary Windows release |
+| macOS Apple Silicon | `GoBACnetWorkbench-0.2.23-osx-arm64-UNTESTED.zip` | Complete desktop app bundle; not run on Mac hardware |
+| macOS Intel | `GoBACnetWorkbench-0.2.23-osx-x64-UNTESTED.zip` | Complete desktop app bundle; not run on Mac hardware |
+
+Version 0.2.23 shows readable names alongside BACnet choice codes and bit flags.
+It uses device-provided state names where available and retains unrecognized codes
+for diagnosis. Property, watch, and snapshot exports include readable values and
+errors alongside their original data. Workspace and baseline JSON remain
+version-compatible, with readable labels added when the file limit permits.
 
 The Windows installer includes the .NET runtime and compiled engine, installs
 per user under the user's local Programs directory, adds a Start Menu shortcut,

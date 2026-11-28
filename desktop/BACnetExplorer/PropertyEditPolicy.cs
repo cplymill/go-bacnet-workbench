@@ -29,8 +29,10 @@ public static class PropertyEditPolicy
     }
     public static void ValidatePriority(int priority)
     {
-        if (priority is < 0 or > 16) throw new InvalidOperationException("Priority must be omitted (0) or 1–16.");
-        if (priority == 6) throw new InvalidOperationException("Priority 6 is reserved for the device's minimum on/off algorithm.");
+        if (priority is < 0 or > 16)
+            throw new InvalidOperationException("Priority must be omitted (0) or 1–16.");
+        if (priority == 6)
+            throw new InvalidOperationException("Priority 6 is reserved for the device's minimum on/off algorithm.");
     }
     public static PropertyEditAccess RequireWrite(PropertyRow row, IEnumerable<PropertyRow> context, int priority, bool advancedAttempt, bool relinquish)
     {
@@ -58,9 +60,7 @@ public static class PropertyEditPolicy
             foreach (var row in group)
             {
                 row.EditAccess = Assess(row, commandable, outOfService);
-                row.FriendlyValue = null;
-                var current = row.EditorValue ?? (row.Type == "enumerated" ? row.Value.Replace("enumerated:", "", StringComparison.Ordinal) : row.Value);
-                row.FriendlyValue = PropertyValueEditor.Choices(row, group).FirstOrDefault(choice => choice.Value == current)?.Label;
+                row.FriendlyValue = BacnetDisplay.Value(row, group);
             }
         }
     }
@@ -76,7 +76,8 @@ public static class PropertyEditPolicy
         if (row.Error.Length > 0 || row.Raw.Length == 0)
             return new("Read unavailable", "Read this property successfully before requesting a change.");
         var typeText = row.Object.Split(':')[0];
-        if (!uint.TryParse(typeText, out var type)) return new("Unknown object", "Read the object's numeric identity first.");
+        if (!uint.TryParse(typeText, out var type))
+            return new("Unknown object", "Read the object's numeric identity first.");
         if (row.Property is "object-type" or "property-list" or "priority-array" or "current-command-priority")
             return new("Read only", row.Property == "priority-array" ? "Priority slots are changed by commanding Present Value at a priority, not by writing this array." : "This is object identity, property inventory or derived command state; no direct write is offered.");
         if (PropertyReadOnlyRules.Contains(type, row.Property) || (type == 8 && DeviceReadOnly.Contains(row.Property)))

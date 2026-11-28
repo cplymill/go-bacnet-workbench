@@ -38,9 +38,9 @@ public sealed partial class WorkbenchWindow : Window
     private readonly Expander connectionSettings = new() { Header = "Connection settings", IsExpanded = true };
     private readonly ListBox devices = new();
     private readonly DataGrid objectGrid = Table(("Object", "ObjectLabel"), ("Name", "Name"), ("Value", "DisplayValue"));
-    private readonly DataGrid propertyGrid = Table(("Property", "DisplayName"), ("Value", "DisplayValue"), ("Type", "DisplayType"), ("Access", "AccessStatus"), ("Error", "Error"));
+    private readonly DataGrid propertyGrid = Table(("Property", "DisplayName"), ("Value", "DisplayValue"), ("Type", "DisplayType"), ("Access", "AccessStatus"), ("Error", "DisplayError"));
     private readonly DataGrid watchGrid = Table(("Point", "Caption"), ("Value", "Value"), ("Quality", "Quality"), ("Updated", "Updated"));
-    private readonly DataGrid eventGrid = Table(("Object", "ObjectLabel"), ("State", "State"), ("Acknowledged", "Acknowledged"), ("Priority", "PriorityDisplay"));
+    private readonly DataGrid eventGrid = Table(("Object", "ObjectLabel"), ("State", "DisplayState"), ("Notice", "DisplayNotifyType"), ("Acknowledged", "DisplayAcknowledged"), ("Priority", "PriorityDisplay"));
     private readonly TextBlock status = new() { Text = "Offline · choose a connection and Connect.", TextWrapping = TextWrapping.Wrap };
     private readonly TextBlock selection = new() { Text = "Select a discovered device", FontSize = 18, FontWeight = FontWeight.SemiBold };
     private readonly TextBox target = Input("", "IPv4 address or address:port; empty broadcasts");
@@ -65,11 +65,7 @@ public sealed partial class WorkbenchWindow : Window
         Foreground = Brushes.DarkOrange,
         TextWrapping = TextWrapping.Wrap
     };
-    private static readonly JsonSerializerOptions HumanJson = new(EngineClient.Json)
-    {
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        WriteIndented = true
-    };
+    private static readonly JsonSerializerOptions HumanJson = WorkbenchExport.CamelCase;
 
     public WorkbenchWindow() : this(null, true) { }
 
@@ -338,7 +334,8 @@ public sealed partial class WorkbenchWindow : Window
             });
         return table;
     }
-    private static string Pretty(object data) => JsonSerializer.Serialize(data, HumanJson);
+    private static string Pretty(object data) =>
+        JsonSerializer.Serialize(data is JsonElement result ? WorkbenchExport.PropertyResult(result) : data, HumanJson);
     private static T Decode<T>(JsonElement json) => json.Deserialize<T>(EngineClient.Json) ?? throw new InvalidDataException("Empty engine response.");
     private static List<PropertyRow> Rows(JsonElement json) => json.ValueKind == JsonValueKind.Array
         ? Decode<List<PropertyRow>>(json)

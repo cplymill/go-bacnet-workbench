@@ -35,6 +35,7 @@ public partial class MainWindow : Window
     private Peer? priorityPeer;
     private string priorityObject = "";
     private string[] prioritySnapshot = [];
+    private string[] priorityDisplaySnapshot = [];
     private IObjectEditor? objectEditor;
     private Peer? focusedPeer;
     private ObjectRow? inspectedObject;
@@ -901,7 +902,11 @@ public partial class MainWindow : Window
         priorityObject = (priorities ?? present)?.Object ?? "";
         priorityPeer = peers.FirstOrDefault(p => p.Key == (priorities ?? present)?.Device);
         priorityValueType = present?.Type ?? fallback?.Type ?? "";
-        prioritySnapshot = priorities == null ? [] : priorities.Elements.Concat(new[] { fallback?.Result ?? "Not read" }).Select(value => value.StartsWith("enumerated:", StringComparison.Ordinal) ? value[11..] : value).ToArray();
+        prioritySnapshot = priorities?.Elements ?? [];
+        priorityDisplaySnapshot = priorities == null ? [] : Enumerable.Range(0, priorities.Elements.Length)
+            .Select(index => BacnetDisplay.Priority(priorities, index, snapshot))
+            .Append(fallback == null ? "Not read" : fallback.Error.Length == 0 ? fallback.DisplayValue : fallback.DisplayError)
+            .ToArray();
         RenderPriorityChanges();
     }
     private object Selector(string? id = null) => new { @object = id ?? ObjectLabels.Numeric(ObjectId.Text), property = PropertyId.Text.Trim(), index = IndexValue };
@@ -936,7 +941,7 @@ public partial class MainWindow : Window
         if (point != null && present?.Error.Length == 0)
             point.Value = present.Value;
         Status.Text = present == null ? "No present-value result returned." : present.Error.Length > 0
-            ? $"{ObjectLabels.Display(id)} · Present value: {present.Error}"
+            ? $"{ObjectLabels.Display(id)} · Present value: {present.DisplayError}"
             : $"{ObjectLabels.Display(id)} · Present value: {present.DisplayValue}";
     });
     private async void ReadCustom(object sender, RoutedEventArgs e) => await Run("Read property", async () =>
@@ -1390,7 +1395,7 @@ public partial class MainWindow : Window
             return Task.CompletedTask;
         var workspace = new Workspace { Connection = Profile(), Watches = watches.Select(w => new Watch { Device = w.Device, Caption = w.Caption, Object = w.Object, Property = w.Property, Index = w.Index }).ToList(), Baseline = baseline };
         workspace.Connection.ConfirmJoin = false;
-        SaveAtomic(path, JsonSerializer.Serialize(workspace, EngineClient.Json));
+        SaveAtomic(path, WorkbenchExport.SaveDocument(workspace, workspace.Baseline));
         workspacePath = path;
         dirty = false;
         Status.Text = "Workspace saved · " + path;
@@ -1435,7 +1440,7 @@ public partial class MainWindow : Window
         dirty = false;
         Status.Text = "Workspace loaded offline. Connect and rediscover to refresh bindings.";
     });
-    private async void SaveBaseline(object sender, RoutedEventArgs e) => await Run("Save baseline", () => { var path = SavePath("baseline.json", "JSON|*.json"); if (path != null) SaveAtomic(path, JsonSerializer.Serialize(baseline, EngineClient.Json)); return Task.CompletedTask; });
+    private async void SaveBaseline(object sender, RoutedEventArgs e) => await Run("Save baseline", () => { var path = SavePath("baseline.json", "JSON|*.json"); if (path != null) SaveAtomic(path, WorkbenchExport.SaveDocument(baseline, baseline)); return Task.CompletedTask; });
     private async void LoadBaseline(object sender, RoutedEventArgs e) => await Run("Load baseline", () =>
     {
         var dialog = new OpenFileDialog { Filter = "JSON|*.json" };
@@ -1462,10 +1467,10 @@ public partial class MainWindow : Window
             return;
         SaveAtomic(path, string.Join("\r\n", rows.Select(row => string.Join(",", row.Select(CsvCell)))) + "\r\n");
     }
-    private async void ExportProperties(object sender, RoutedEventArgs e) => await Run("Export properties", () => { ExportCsv("properties.csv", new[] { new object?[] { "Device", "Object", "Property", "Index", "Value", "Type", "Error", "Raw", "Observed UTC" } }.Concat(properties.Select(r => new object?[] { r.Device, r.Object, r.Property, r.Index, r.Value, r.Type, r.Error, r.Raw, r.At.ToString("O") }))); return Task.CompletedTask; });
+    private async void ExportProperties(object sender, RoutedEventArgs e) => await Run("Export properties", () => { ExportCsv("properties.csv", new[] { new object?[] { "Device", "Object", "Property", "Index", "Value", "Type", "Error", "Raw", "Observed UTC", "Readable value", "Readable error", "Object description", "Property name" } }.Concat(properties.Select(r => new object?[] { r.Device, r.Object, r.Property, r.Index, r.Value, r.Type, r.Error, r.Raw, r.At.ToString("O"), r.DisplayValue, r.DisplayError, BacnetDisplay.ObjectReference(r.Object), r.DisplayName }))); return Task.CompletedTask; });
     private async void ExportActivity(object sender, RoutedEventArgs e) => await Run("Export activity", () => { ExportCsv("activity.csv", new[] { new object?[] { "Time", "Operation", "Target", "Result" } }.Concat(activity.Select(r => new object?[] { r.Time, r.Operation, r.Target, r.Result }))); return Task.CompletedTask; });
-    private async void ExportDifferences(object sender, RoutedEventArgs e) => await Run("Export differences", () => { ExportCsv("differences.csv", new[] { new object?[] { "Object", "Property", "Baseline", "Live", "Change" } }.Concat(differences.Select(r => new object?[] { r.Object, r.Property, r.Before, r.After, r.Change }))); return Task.CompletedTask; });
-    private async void ExportHistory(object sender, RoutedEventArgs e) => await Run("Export history", () => { ExportCsv("watch-history.csv", new[] { new object?[] { "Device", "Object", "Property", "Index", "UTC", "Value", "Error", "Source" } }.Concat(watches.SelectMany(w => w.Samples.Select(s => new object?[] { w.Device, w.Object, w.Property, w.Index, s.At.ToString("O"), s.Value, s.Error, s.Source })))); return Task.CompletedTask; });
+    private async void ExportDifferences(object sender, RoutedEventArgs e) => await Run("Export differences", () => { ExportCsv("differences.csv", new[] { new object?[] { "Object", "Property", "Baseline", "Live", "Change", "Readable baseline", "Readable live", "Object description", "Property name" } }.Concat(differences.Select(r => new object?[] { r.Object, r.Property, r.RawBefore, r.RawAfter, r.Change, r.Before, r.After, BacnetDisplay.ObjectReference(r.Object), WorkbenchExport.Selector(r.Property) }))); return Task.CompletedTask; });
+    private async void ExportHistory(object sender, RoutedEventArgs e) => await Run("Export history", () => { ExportCsv("watch-history.csv", new[] { new object?[] { "Device", "Object", "Property", "Index", "UTC", "Value", "Error", "Source", "Readable value", "Readable error", "Object description", "Property name" } }.Concat(watches.SelectMany(w => w.Samples.Select(s => new object?[] { w.Device, w.Object, w.Property, w.Index, s.At.ToString("O"), s.Value, s.Error, s.Source, s.DisplayValue, s.DisplayError, BacnetDisplay.ObjectReference(w.Object), BacnetDisplay.PropertyName(w.Property) })))); return Task.CompletedTask; });
 
     private bool shutdownComplete;
     private async void WindowClosing(object? sender, CancelEventArgs e)
