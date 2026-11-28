@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <AssemblyName>GoBACnetWorkbench</AssemblyName>
-    <Version>0.2.22</Version>
+    <Version>0.2.23</Version>
     <AvaloniaVersion>12.1.2</AvaloniaVersion>
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
   </PropertyGroup>
@@ -17,6 +17,9 @@
     <PackageReference Include="Avalonia.Fonts.Inter" Version="$(AvaloniaVersion)" />
     <Compile Include="../BACnetExplorer/EngineClient.cs" Link="Shared/EngineClient.cs" />
     <Compile Include="../BACnetExplorer/Models.cs" Link="Shared/Models.cs" />
+    <Compile Include="../BACnetExplorer/BacnetDisplay.cs" Link="Shared/BacnetDisplay.cs" />
+    <Compile Include="../BACnetExplorer/WorkbenchExport.cs" Link="Shared/WorkbenchExport.cs" />
+    <EmbeddedResource Include="../BACnetExplorer/BacnetDisplayCatalog.json" LogicalName="Workbench.BacnetLabels" />
     <Compile Include="../BACnetExplorer/ObjectLabels.cs" Link="Shared/ObjectLabels.cs" />
     <Compile Include="../BACnetExplorer/OperationFailure.cs" Link="Shared/OperationFailure.cs" />
     <Compile Include="../BACnetExplorer/PropertyEditPolicy.cs" Link="Shared/PropertyEditPolicy.cs" />

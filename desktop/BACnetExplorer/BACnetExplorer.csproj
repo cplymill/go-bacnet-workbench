@@ -8,7 +8,7 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <AssemblyName>GoBACnetWorkbench</AssemblyName>
     <RootNamespace>BACnetExplorer</RootNamespace>
-    <Version>0.2.22</Version>
+    <Version>0.2.23</Version>
     <Product>Go BACnet Workbench</Product>
     <Description>BACnet network troubleshooting and commissioning with Go BACnet Stack</Description>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -16,5 +16,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Resource Include="../branding/go-bacnet-workbench-logo-v3.png" Link="Assets/Logo.png" />
+    <EmbeddedResource Include="BacnetDisplayCatalog.json" LogicalName="Workbench.BacnetLabels" />
   </ItemGroup>
 </Project>

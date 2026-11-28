@@ -190,7 +190,7 @@
             <TreeView MinHeight="180" x:Name="DeviceList" SelectedItemChanged="DeviceTreeSelected" VirtualizingStackPanel.IsVirtualizing="True" VirtualizingStackPanel.VirtualizationMode="Recycling" ScrollViewer.CanContentScroll="True">
               <TreeView.Resources>
                 <HierarchicalDataTemplate DataType="{x:Type local:Peer}" ItemsSource="{Binding DeviceChildren}">
-                  <StackPanel Orientation="Horizontal">
+                  <StackPanel Orientation="Horizontal" ToolTip="{Binding Warning}">
                     <TextBlock Text="▣ " Foreground="#117D85" />
                     <TextBlock Text="{Binding Caption}" />
                     <TextBlock Text=" — " />
@@ -264,8 +264,12 @@
                   <DataGrid.Columns>
                     <DataGridTextColumn Header="Property" Binding="{Binding DisplayName}" Width="150" />
                     <DataGridTextColumn Header="Type" Binding="{Binding DisplayType}" Width="100" />
-                    <DataGridTextColumn Header="Value" Binding="{Binding DisplayValue}" Width="*" MinWidth="140" />
-                    <DataGridTextColumn Header="Error" Binding="{Binding Error}" Width="130" />
+                    <DataGridTextColumn Header="Value" Binding="{Binding DisplayValue}" Width="*" MinWidth="140">
+                      <DataGridTextColumn.ElementStyle><Style TargetType="TextBlock"><Setter Property="ToolTip" Value="{Binding DisplayValue}" /></Style></DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+                    <DataGridTextColumn Header="Error" Binding="{Binding DisplayError}" Width="180">
+                      <DataGridTextColumn.ElementStyle><Style TargetType="TextBlock"><Setter Property="ToolTip" Value="{Binding DisplayError}" /></Style></DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
                     <DataGridTextColumn Header="Access" Binding="{Binding AccessStatus}" Width="105"><DataGridTextColumn.ElementStyle><Style TargetType="TextBlock"><Setter Property="ToolTip" Value="{Binding AccessReason}" /></Style></DataGridTextColumn.ElementStyle></DataGridTextColumn>
                     <DataGridTemplateColumn x:Name="PropertyChangeColumn" Header="Change" Width="72"><DataGridTemplateColumn.CellTemplate><DataTemplate>
                       <Button Content="Edit" Click="BeginPropertyEdit" Tag="{Binding}" IsEnabled="{Binding CanEdit}" MinHeight="0" Height="24" VerticalAlignment="Center" Padding="7,1" Margin="0" ToolTip="{Binding AccessReason}"><Button.Style><Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}"><Setter Property="Visibility" Value="Collapsed" /><Style.Triggers><DataTrigger Binding="{Binding CanEdit}" Value="True"><Setter Property="Visibility" Value="Visible" /></DataTrigger></Style.Triggers></Style></Button.Style></Button>
@@ -422,9 +426,9 @@
             <DataGrid x:Name="EventGrid">
               <DataGrid.Columns>
                 <DataGridTextColumn Header="Object" Binding="{Binding ObjectLabel}" Width="110" />
-                <DataGridTextColumn Header="State" Binding="{Binding State}" Width="130" />
-                <DataGridTextColumn Header="Notify type" Binding="{Binding NotifyType}" Width="130" />
-                <DataGridTextColumn Header="Acknowledged" Binding="{Binding Acknowledged}" Width="*" />
+                <DataGridTextColumn Header="State" Binding="{Binding DisplayState}" Width="130" />
+                <DataGridTextColumn Header="Notify type" Binding="{Binding DisplayNotifyType}" Width="130" />
+                <DataGridTextColumn Header="Acknowledged" Binding="{Binding DisplayAcknowledged}" Width="*" />
                 <DataGridTextColumn Header="Priorities" Binding="{Binding PriorityDisplay}" Width="180" />
               </DataGrid.Columns>
             </DataGrid>
@@ -525,7 +529,7 @@
                 <DataGridTextColumn Header="Time" Binding="{Binding Time}" Width="100" />
                 <DataGridTextColumn Header="Operation" Binding="{Binding Operation}" Width="150" />
                 <DataGridTextColumn Header="Target" Binding="{Binding Target}" Width="220" />
-                <DataGridTextColumn Header="Result" Binding="{Binding Result}" Width="*" />
+                <DataGridTextColumn Header="Result" Binding="{Binding DisplayResult}" Width="*" />
               </DataGrid.Columns>
             </DataGrid>
           </DockPanel>

@@ -27,12 +27,17 @@ internal static class Snapshot
         long valueBytes = rows.Sum(row => (long)row.Raw.Length / 2);
         foreach (var batch in objects.Chunk(128))
         {
-            if (canceled()) throw new OperationCanceledException("Snapshot canceled; previous baseline retained.");
+            if (canceled())
+                throw new OperationCanceledException("Snapshot canceled; previous baseline retained.");
             var selections = batch.SelectMany(id => new[] {
                 new { @object = id, property = "priority-array" },
                 new { @object = id, property = "relinquish-default" }
             }).ToArray();
-            var result = await engine.Call("read", new { device, selections });
+            var result = await engine.Call("read", new
+            {
+                device,
+                selections
+            });
             var observations = result.GetProperty("rows").Deserialize<List<PropertyRow>>(EngineClient.Json)
                 ?? throw new InvalidDataException("Snapshot priority results are missing.");
             var expected = selections.Select(item => $"{device}|{item.@object}|{item.property}|").ToHashSet();
@@ -49,7 +54,8 @@ internal static class Snapshot
                 rows.Add(row);
             }
         }
-        if (canceled()) throw new OperationCanceledException("Snapshot canceled; previous baseline retained.");
+        if (canceled())
+            throw new OperationCanceledException("Snapshot canceled; previous baseline retained.");
         Validate(rows);
         if (JsonSerializer.SerializeToUtf8Bytes(rows, EngineClient.Json).Length > MaximumFileBytes)
             throw new InvalidDataException("Snapshot exceeds the 16 MiB baseline file limit.");
@@ -72,6 +78,8 @@ internal static class Snapshot
         var devices = baseline.Select(row => row.Device).Distinct().ToArray();
         if (devices.Length != 1 || live.Any(row => row.Device != devices[0]))
             throw new InvalidOperationException("Baseline belongs to a different device binding. Select its original device or capture a new baseline.");
+        var baselineContext = baseline.ToLookup(row => row.Object);
+        var liveContext = live.ToLookup(row => row.Object);
         var before = baseline.ToDictionary(row => row.Identity);
         var after = live.ToDictionary(row => row.Identity);
         var oldObjects = baseline.Select(row => row.Object).ToHashSet();
@@ -91,13 +99,21 @@ internal static class Snapshot
                 {
                     var typesKnown = old.ArrayTypes.Length == 16 && current.ArrayTypes.Length == 16;
                     var typeChanged = typesKnown && old.ArrayTypes[index] != current.ArrayTypes[index];
-                    if (old.Elements[index] == current.Elements[index] && !typeChanged) continue;
+                    if (old.Elements[index] == current.Elements[index] && !typeChanged)
+                        continue;
+                    var oldType = typeChanged ? $" ({old.ArrayTypes[index]})" : "";
+                    var currentType = typeChanged ? $" ({current.ArrayTypes[index]})" : "";
                     differences.Add(new Difference(row.Object, $"priority-array[{index + 1}]",
-                        old.Elements[index] + (typeChanged ? $" ({old.ArrayTypes[index]})" : ""),
-                        current.Elements[index] + (typeChanged ? $" ({current.ArrayTypes[index]})" : ""), "Changed"));
+                        BacnetDisplay.Priority(old, index, baselineContext[row.Object]) + oldType,
+                        BacnetDisplay.Priority(current, index, liveContext[row.Object]) + currentType, "Changed")
+                    {
+                        RawBefore = old.Elements[index] + oldType,
+                        RawAfter = current.Elements[index] + currentType
+                    });
                     changed = true;
                 }
-                if (changed) continue;
+                if (changed)
+                    continue;
                 // Equal display text may still encode a different datatype. Keep the raw change visible.
             }
             var notCaptured = old == null && oldObjects.Contains(row.Object)
@@ -105,12 +121,20 @@ internal static class Snapshot
             var change = notCaptured ? "Not captured" : old == null ? "Added" : current == null ? "Removed"
                 : old.Error.Length > 0 || current.Error.Length > 0 ? "Read error" : "Changed";
             differences.Add(new Difference(row.Object, row.Selector,
-                notCaptured ? "Not captured in this baseline" : Describe(old), Describe(current), change));
+                notCaptured ? "Not captured in this baseline" : Describe(old, baselineContext[row.Object]),
+                Describe(current, liveContext[row.Object]), change)
+            {
+                RawBefore = notCaptured ? "Not captured in this baseline" : RawDescription(old),
+                RawAfter = RawDescription(current)
+            });
         }
         return differences;
     }
 
-    private static string Describe(PropertyRow? row) => row == null ? "" : row.Error.Length > 0 ? row.Error
-        : row.Property == "priority-array" && row.Elements.Length == 16
-            ? string.Join("; ", row.Elements.Select((value, index) => $"P{index + 1}={value}")) : row.Value;
+    private static string RawDescription(PropertyRow? row) => row == null ? "" :
+        row.Property == "priority-array" && row.Error.Length == 0 && row.Elements.Length == 16
+            ? string.Join("; ", row.Elements.Select((value, index) => $"P{index + 1}={value}")) : row.Result;
+
+    private static string Describe(PropertyRow? row, IEnumerable<PropertyRow> context) => row == null ? "" :
+        row.Error.Length > 0 ? row.DisplayError : BacnetDisplay.Value(row, context);
 }

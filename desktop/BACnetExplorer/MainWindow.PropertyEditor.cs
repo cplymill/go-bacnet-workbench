@@ -26,9 +26,12 @@ public partial class MainWindow
         BooleanWriteValue.SelectedValue = draft.Value;
         Priority.Text = draft.Priority;
         PropertyWeekday.SelectedValue = draft.Weekday;
-        for (var index = 0; index < Math.Min(propertyArrayItems.Count, draft.Items.Length); index++) propertyArrayItems[index].Value = draft.Items[index];
-        if (propertyArrayItems.Count > 0) PropertyArrayGrid.Items.Refresh();
-        for (var index = 0; index < Math.Min(propertyFlagItems.Count, draft.Value.Length); index++) propertyFlagItems[index].Enabled = draft.Value[index] == '1';
+        for (var index = 0; index < Math.Min(propertyArrayItems.Count, draft.Items.Length); index++)
+            propertyArrayItems[index].Value = draft.Items[index];
+        if (propertyArrayItems.Count > 0)
+            PropertyArrayGrid.Items.Refresh();
+        for (var index = 0; index < Math.Min(propertyFlagItems.Count, draft.Value.Length); index++)
+            propertyFlagItems[index].Enabled = draft.Value[index] == '1';
         AdvancedPropertyAttempt.IsChecked = draft.Advanced;
         WriteValue.Text = draft.Value;
         WriteValue.Select(draft.Start, draft.Length);
@@ -40,7 +43,8 @@ public partial class MainWindow
     private GridLength propertyEditorWidth = new(1, GridUnitType.Star);
     private void PropertyEditorLayoutChanged(object sender, RoutedEventArgs e)
     {
-        if (ReferenceEquals(e.OriginalSource, PropertyEditor)) UpdatePropertyEditorLayout();
+        if (ReferenceEquals(e.OriginalSource, PropertyEditor))
+            UpdatePropertyEditorLayout();
     }
     private void UpdatePropertyEditorLayout()
     {
@@ -52,7 +56,8 @@ public partial class MainWindow
         }
         else
         {
-            if (PropertyEditColumn.Width.Value > 0) propertyEditorWidth = PropertyEditColumn.Width;
+            if (PropertyEditColumn.Width.Value > 0)
+                propertyEditorWidth = PropertyEditColumn.Width;
             PropertyEditColumn.MinWidth = 0;
             PropertyEditColumn.Width = new GridLength(0);
         }
@@ -73,12 +78,12 @@ public partial class MainWindow
         PropertyDatePicker.SelectedDate = DateTime.TryParseExact(WriteValue.Text, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var date) ? date : null;
         PropertyWeekday.ItemsSource = new[] { new PropertyChoice("255", "Any weekday"), new("1", "Monday"), new("2", "Tuesday"), new("3", "Wednesday"), new("4", "Thursday"), new("5", "Friday"), new("6", "Saturday"), new("7", "Sunday") };
         PropertyWeekday.SelectedValue = row.EditorValue?.Split('|').ElementAtOrDefault(1) ?? "255";
-        propertyArrayItems = row.ArrayValues.Select((value, index) => new PropertyArrayItem { Index = index+1, Value = row.ArrayTypes.ElementAtOrDefault(index) == "object-identifier" ? ObjectLabels.Display(value) : value }).ToList();
+        propertyArrayItems = row.ArrayValues.Select((value, index) => new PropertyArrayItem { Index = index + 1, Value = row.ArrayTypes.ElementAtOrDefault(index) == "object-identifier" ? ObjectLabels.Display(value) : value }).ToList();
         PropertyArrayGrid.ItemsSource = propertyArrayItems;
         PropertyArrayGrid.Visibility = propertyArrayItems.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
         var bits = row.Type == "bit-string" ? row.EditorValue ?? "" : "";
-        string[] names = row.Property switch { "event-enable" or "acked-transitions" => ["Off-normal transition", "Fault transition", "Normal transition"], "limit-enable" => ["Low limit enabled", "High limit enabled"], "valid-days" => ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"], _ => [] };
-        propertyFlagItems = bits.Length <= 128 ? bits.Select((bit, index) => new PropertyFlagItem { Label = index < names.Length ? names[index] : "Bit " + (index+1), Enabled = bit == '1' }).ToList() : [];
+        var names = BacnetDisplay.FlagsFor(row.Property);
+        propertyFlagItems = bits.Length <= 128 ? bits.Select((bit, index) => new PropertyFlagItem { Label = index < names.Length ? names[index] : "Bit " + (index + 1), Enabled = bit == '1' }).ToList() : [];
         PropertyFlags.ItemsSource = propertyFlagItems;
         PropertyFlags.Visibility = propertyFlagItems.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
     }
@@ -86,7 +91,8 @@ public partial class MainWindow
     {
         var value = WriteValue.Text;
         var items = choices.ToList();
-        if (items.Count > 0 && items.All(item => item.Value != value)) items.Add(new(value, "Current: " + value));
+        if (items.Count > 0 && items.All(item => item.Value != value))
+            items.Add(new(value, "Current: " + value));
         BooleanWriteValue.ItemsSource = items;
         WriteValue.Text = value;
         BooleanWriteValue.SelectedValue = value;
@@ -94,12 +100,16 @@ public partial class MainWindow
     }
     private async Task LoadPropertyUnitChoices(PropertyRow row)
     {
-        if (row.Property != "units" || !row.CanEdit) return;
+        if (row.Property != "units" || !row.CanEdit)
+            return;
         try
         {
             unitChoices ??= ReadUnits();
             var choices = await unitChoices;
-            if (ReferenceEquals(PropertyGrid.SelectedItem, row)) { SetPropertyChoices(choices); }
+            if (ReferenceEquals(PropertyGrid.SelectedItem, row))
+            {
+                SetPropertyChoices(choices);
+            }
         }
         catch (Exception ex) { Status.Text = "Unit names unavailable; enter the unit code. " + ex.Message; unitChoices = null; }
     }
@@ -109,7 +119,8 @@ public partial class MainWindow
         if (PropertyDatePicker.SelectedDate is DateTime date)
         {
             WriteValue.Text = date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
-            if (PropertyWeekday.ItemsSource != null) PropertyWeekday.SelectedValue = (((int)date.DayOfWeek + 6) % 7 + 1).ToString(CultureInfo.InvariantCulture);
+            if (PropertyWeekday.ItemsSource != null)
+                PropertyWeekday.SelectedValue = (((int)date.DayOfWeek + 6) % 7 + 1).ToString(CultureInfo.InvariantCulture);
         }
     }
     private void PropertyFlagChanged(object sender, RoutedEventArgs e) => WriteValue.Text = string.Concat(propertyFlagItems.Select(item => item.Enabled ? '1' : '0'));
@@ -121,22 +132,36 @@ public partial class MainWindow
             var oldObject = identity.GetProperty("oldObject").GetString()!;
             var newObject = identity.GetProperty("newObject").GetString()!;
             var changed = Decode<Peer>(identity.GetProperty("peer"));
-            peer.Key = changed.Key; peer.Device = changed.Device; peer.Instance = changed.Instance; peer.RefreshIdentity();
+            peer.Key = changed.Key;
+            peer.Device = changed.Device;
+            peer.Instance = changed.Instance;
+            peer.RefreshIdentity();
             dirty = true;
-            foreach (var item in peer.Children.OfType<ObjectRow>().Concat(objects).Distinct().Where(item => item.Object == oldObject)) item.Object = newObject;
-            foreach (var watch in watches.Where(watch => watch.Device == oldKey).ToList()) watch.Rebind(peer.Key, watch.Object == oldObject ? newObject : watch.Object, peer.Caption);
-            if (ObjectId.Text == oldObject || ObjectId.Text.Equals(ObjectLabels.Display(oldObject), StringComparison.OrdinalIgnoreCase)) ObjectId.Text = ObjectLabels.Display(newObject);
-            if (priorityObject == oldObject) priorityObject = newObject;
+            foreach (var item in peer.Children.OfType<ObjectRow>().Concat(objects).Distinct().Where(item => item.Object == oldObject))
+                item.Object = newObject;
+            foreach (var watch in watches.Where(watch => watch.Device == oldKey).ToList())
+                watch.Rebind(peer.Key, watch.Object == oldObject ? newObject : watch.Object, peer.Caption);
+            if (ObjectId.Text == oldObject || ObjectId.Text.Equals(ObjectLabels.Display(oldObject), StringComparison.OrdinalIgnoreCase))
+                ObjectId.Text = ObjectLabels.Display(newObject);
+            if (priorityObject == oldObject)
+                priorityObject = newObject;
             ObjectGrid.Items.Refresh();
             NavigationTitle.Text = focusedPeer?.Caption ?? "Devices";
         }
         SelectedDeviceTitle.Text = inspectedObject != null ? inspectedObject.Name + " · " + inspectedObject.ObjectLabel : peer.Caption + " · " + peer.Address;
-        if (!result.TryGetProperty("readback", out var readback)) return;
+        if (!result.TryGetProperty("readback", out var readback))
+            return;
         foreach (var row in Rows(readback).Where(row => row.Error.Length == 0 && row.Property == "object-name"))
         {
-            foreach (var item in peer.Children.OfType<ObjectRow>().Concat(objects).Distinct().Where(item => item.Object == row.Object)) item.Name = row.EditorValue ?? row.DisplayValue;
-            if (row.Object == peer.Device) { peer.Name = row.EditorValue ?? row.DisplayValue; dirty = true; }
-            foreach (var watch in watches.Where(watch => watch.Device == peer.Key)) watch.Rebind(peer.Key, watch.Object, peer.Caption);
+            foreach (var item in peer.Children.OfType<ObjectRow>().Concat(objects).Distinct().Where(item => item.Object == row.Object))
+                item.Name = row.EditorValue ?? row.DisplayValue;
+            if (row.Object == peer.Device)
+            {
+                peer.Name = row.EditorValue ?? row.DisplayValue;
+                dirty = true;
+            }
+            foreach (var watch in watches.Where(watch => watch.Device == peer.Key))
+                watch.Rebind(peer.Key, watch.Object, peer.Caption);
             NavigationTitle.Text = focusedPeer?.Caption ?? "Devices";
             SelectedDeviceTitle.Text = inspectedObject != null ? inspectedObject.Name + " · " + inspectedObject.ObjectLabel : peer.Caption + " · " + peer.Address;
         }
